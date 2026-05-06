@@ -30,31 +30,24 @@ function generatePDF({ name, gender, internType, durationType, duration, role, s
 
     let thirdParagraph = `This ${internType} offer is subject to your acceptance to following terms (you joining the company shall mean and be interpreted as acceptance of following terms by you):`;
 
-    let terms1 = [
-        `1) Company, at its sole and exclusive discretion reserves the right to offer you further ${internType} and/or job offer, subject to complete satisfaction of your performance (Both technical as well as from HR perspective); however, in no way shall company be obligated to provide extension or any further job offer.`,
-        `2) During the above-mentioned ${internType} period, the company at its sole and exclusive discretion, reserves the right to immediately terminate the ${internType} of the candidate (yours), without assigning any reason thereof.`,
-    ];
+    let t1 = `1) Company, at its sole and exclusive discretion reserves the right to offer you further ${internType} and/or job offer, subject to complete satisfaction of your performance (Both technical as well as from HR perspective); however, in no way shall company be obligated to provide extension or any further job offer.`;
 
-    let terms2 = [
-        `3) This letter does not construe upon any appointment, offer, contract or any terms that may be associated with employment, labor laws or otherwise as the company has on pro-bono basis accepted to train you and provide a platform to conduct your ${internType} at company's premises. The intern shall adhere and follow the company's HR rule & regulations, code of conduct and other policies applicable in the office. The termination decision of the company shall be final and binding. Candidate (Trainee / Intern / you) hereby confirm and acknowledge that you have read all the above terms and conditions of the company and is deemed to be accepted by you and shall indemnify company under any obligation that may arise due to you joining our company as a Trainee/Intern, upon you joining the company under any capacity / designation. You further shall indemnify the company, its employees, its representatives, its consultants etc., but not limited to, in any matter of dispute and shall here further undertake not to undertake any legal actions, claim, recourse against the company in any manner related to this association, now and in future. Additionally, the company may require the intern to sign/execute an NDA for safeguarding the company and its clients' interests, to which intern shall agree.`
-    ];
+    let t2 = `2) During the above-mentioned ${internType} period, the company at its sole and exclusive discretion, reserves the right to immediately terminate the ${internType} of the candidate (yours), without assigning any reason thereof.`;
+
+    let t3 = `3) This letter does not construe upon any appointment, offer, contract or any terms that may be associated with employment, labor laws or otherwise as the company has on pro-bono basis accepted to train you and provide a platform to conduct your ${internType} at company's premises. The intern shall adhere and follow the company's HR rule & regulations, code of conduct and other policies applicable in the office. The termination decision of the company shall be final and binding. Candidate (Trainee / Intern / you) hereby confirm and acknowledge that you have read all the above terms and conditions of the company and is deemed to be accepted by you and shall indemnify company under any obligation that may arise due to you joining our company as a Trainee/Intern, upon you joining the company under any capacity / designation. You further shall indemnify the company, its employees, its representatives, its consultants etc., but not limited to, in any matter of dispute and shall here further undertake not to undertake any legal actions, claim, recourse against the company in any manner related to this association, now and in future. Additionally, the company may require the intern to sign/execute an NDA for safeguarding the company and its clients' interests, to which intern shall agree.`;
 
     let director = `Sincerely,\nHARDIKKUMAR VINZAVA\nDIRECTOR`;
 
     let companyName = `SAECULUM SOLUTIONS PV LTD`;
     let spac = `--------------------------------X----------------------------X-----------------------`;
 
-    let footer = `I, ${name}, hereby accept the above - mentioned Internship offer alongwith the terms mentioned therein and acknowledge receiving a copy of the same.\n\nSignature_____________________\nName of the Trainee Accepting offer ${name}\n\nPlace of sole & exclusive Jurisdiction: Ahmedabad, Gujarat, India`;
+    let footer1 = `I, ${name}, hereby accept the above - mentioned Internship offer alongwith the terms mentioned therein and acknowledge receiving a copy of the same.`;
+    let footer2 = `Signature_____________________`;
+    let footer3 = `Name of the Trainee Accepting offer ${name}`;
+    let footer4 = `Place of sole & exclusive Jurisdiction: Ahmedabad, Gujarat, India`;
 
 
     const doc = new jsPDF();
-
-    const splitFirstParagraph = doc.splitTextToSize(firstParagraph, 240);
-    const splitSecondParagraph = doc.splitTextToSize(secondParagraph, 240);
-    const splitSalaryParagraph = doc.splitTextToSize(salaryParagraph, 240);
-    const splitThirdParagraph = doc.splitTextToSize(thirdParagraph, 240);
-    const splitTerms1 = terms1.map(term => doc.splitTextToSize(term, 240));
-    const splitTerms2 = terms2.map(term => doc.splitTextToSize(term, 240));
 
     doc.addImage(template, "PNG", 0, 0, 210, 297);
     doc.setFontSize(11);
@@ -71,32 +64,59 @@ function generatePDF({ name, gender, internType, durationType, duration, role, s
     doc.text(subject, doc.internal.pageSize.getWidth() / 2, yPosition, { align: "center" });
     yPosition += 13;
 
-    doc.text(splitFirstParagraph, 25, yPosition, { lineHeightFactor: 1.5 });
-    yPosition += splitFirstParagraph.length * 6.5;
-
-    doc.text(splitSecondParagraph, 25, yPosition, { lineHeightFactor: 1.5 });
-    yPosition += splitSecondParagraph.length * 6.5 + 5;
-
-    doc.text(splitSalaryParagraph, 25, yPosition, { lineHeightFactor: 1.5 });
-    yPosition += splitSalaryParagraph.length * 6.5 + 5;
-
-    doc.text(splitThirdParagraph, 25, yPosition, { lineHeightFactor: 1.5 });
-    yPosition += splitThirdParagraph.length * 6.5;
-
-    splitTerms1.forEach(term => {
-        doc.text(term, 25, yPosition, { lineHeightFactor: 1.5 });
-        yPosition += term.length * 6.5 + 3;
+    doc.text(firstParagraph, 25, yPosition, {
+        maxWidth: 160,
+        align: "justify",
+        lineHeightFactor: 1.5
     });
+    yPosition += doc.splitTextToSize(firstParagraph, 160).length * 6.5 + 5;
+
+    doc.text(secondParagraph, 25, yPosition, {
+        maxWidth: 160,
+        align: "justify",
+        lineHeightFactor: 1.5
+    });
+    yPosition += doc.splitTextToSize(secondParagraph, 160).length * 6.5 + 5;
+
+    doc.text(salaryParagraph, 25, yPosition, {
+        maxWidth: 160,
+        align: "justify",
+        lineHeightFactor: 1.5
+    });
+    yPosition += doc.splitTextToSize(salaryParagraph, 160).length * 6.5 + 5;
+
+    doc.text(thirdParagraph, 25, yPosition, {
+        maxWidth: 160,
+        align: "justify",
+        lineHeightFactor: 1.5
+    });
+    yPosition += doc.splitTextToSize(thirdParagraph, 160).length * 6.5 + 5;
+
+    doc.text(t1, 25, yPosition, {
+        maxWidth: 160,
+        align: "justify",
+        lineHeightFactor: 1.5
+    });
+    yPosition += doc.splitTextToSize(t1, 160).length * 6.5;
+
+    doc.text(t2, 25, yPosition, {
+        maxWidth: 160,
+        align: "justify",
+        lineHeightFactor: 1.5
+    });
+    yPosition += doc.splitTextToSize(t2, 160).length * 6.5;
 
     doc.addPage();
     doc.addImage(template, "PNG", 0, 0, 210, 297);
     doc.addImage(transparent, "PNG", 7, 55, 200, 200);
     yPosition = 45;
 
-    splitTerms2.forEach(term => {
-        doc.text(term, 25, yPosition, { lineHeightFactor: 1.5 });
-        yPosition += term.length * 6.5 + 3;
+    doc.text(t3, 25, yPosition, {
+        maxWidth: 160,
+        align: "justify",
+        lineHeightFactor: 1.5
     });
+    yPosition += doc.splitTextToSize(t3, 160).length * 6.5;
 
     doc.text(director, 25, yPosition, { lineHeightFactor: 1.5 });
     yPosition += 15;
@@ -110,8 +130,21 @@ function generatePDF({ name, gender, internType, durationType, duration, role, s
     doc.text(spac, doc.internal.pageSize.getWidth() / 2, yPosition, { align: "center" });
     yPosition += 10;
 
-    const splitFooter = doc.splitTextToSize(footer, 160);
-    doc.text(splitFooter, 25, yPosition, { lineHeightFactor: 1.5 });
+    doc.text(footer1, 25, yPosition, {
+        maxWidth: 160,
+        align: "justify",
+        lineHeightFactor: 1.5
+    });
+    yPosition += doc.splitTextToSize(footer1, 160).length * 6.5 + 5;
+
+    doc.text(footer2, 25, yPosition);
+    yPosition += 10;
+
+    doc.text(footer3, 25, yPosition);
+    yPosition += 10;
+
+    doc.text(footer4, 25, yPosition);
+    yPosition += 10;
 
     doc.save(`${internType}_Letter ${name}.pdf`);
 }
