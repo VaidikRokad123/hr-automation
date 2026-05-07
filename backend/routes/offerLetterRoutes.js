@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateOfferLetter, getOfferLetterData, compileOfferLetter } from '../controllers/offerLetterController.js';
+import { generateOfferLetter, getOfferLetterData, compileOfferLetter } from '../controllers/wkhtmlOfferLetterController.js';
 
 const router = express.Router();
 

@@ -3,7 +3,6 @@ import cors from 'cors';
 import path from 'path';
 
 import offerLetterRoutes from './routes/offerLetterRoutes.js';
-// import wkhtmlOfferLetterRoutes from './routes/wkhtmlOfferLetterRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;

@@ -98,7 +98,7 @@ The frontend will run on `http://localhost:3000`
 2. **Backend**: Express API with organized controllers and routes
    - Separate controllers for each HR module
    - RESTful API endpoints
-   - Server-side PDF generation using jsPDF
+   - Server-side PDF generation using wkhtmltopdf
 
 3. **Communication**: Frontend sends requests to backend API, receives responses
 
@@ -149,7 +149,7 @@ The frontend will run on `http://localhost:3000`
 ### Backend
 - Node.js
 - Express
-- jsPDF
+- wkhtmltopdf
 - CORS
 
 ## Development
