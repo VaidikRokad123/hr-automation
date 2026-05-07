@@ -16,6 +16,7 @@ function OfferLetter() {
   const [salaryAmount, setSalaryAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [pdfPath, setPdfPath] = useState("");
 
   async function generateOfferLetter() {
     try {
@@ -33,20 +34,13 @@ function OfferLetter() {
         endDate,
         salaryType,
         salaryAmount
-      }, {
-        responseType: 'blob'
       });
 
-      // Create a blob URL and trigger download
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${internType}_Letter_${name.toUpperCase()}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      console.log(response.data);
+
+      setPdfPath(response.data.path);
+
+      alert(`Offer letter generated successfully!`);
 
     } catch (err) {
       console.error('Error generating offer letter:', err);
@@ -56,10 +50,20 @@ function OfferLetter() {
     }
   }
 
+  function openFilePath() {
+
+    if (!pdfPath) {
+      alert("Generate offer letter first");
+      return;
+    }
+
+    window.open(pdfPath, "_blank");
+  }
+
   return (
     <div className="OfferLetter">
       <h2>Offer Letter Generator</h2>
-      
+
       <input type="text" placeholder='name' value={name} onChange={(e) => setName(e.target.value)} />
       <br></br><input type="radio" name="gender" value="male" checked={gender === "male"} onChange={() => setGender("male")} /> male
       <input type="radio" name="gender" value="female" checked={gender === "female"} onChange={() => setGender("female")} /> female
@@ -88,6 +92,11 @@ function OfferLetter() {
       <button onClick={() => generateOfferLetter()} disabled={loading}>
         {loading ? 'Generating Offer Letter...' : 'Generate Offer Letter'}
       </button>
+
+      <button onClick={() => openFilePath()}>
+        open file path
+      </button>
+
     </div >
   );
 }

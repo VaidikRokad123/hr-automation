@@ -1,8 +1,8 @@
-const { jsPDF } = require('jspdf');
-const fs = require('fs');
-const path = require('path');
+import { jsPDF } from 'jspdf';
+import fs from 'fs';
+import path from 'path';
 
-const generateOfferLetter = async (req, res) => {
+export const generateOfferLetter = async (req, res) => {
     try {
         const {
             name,
@@ -192,5 +192,3 @@ const generateOfferLetter = async (req, res) => {
         res.status(500).json({ error: 'Failed to generate PDF', details: error.message });
     }
 };
-
-module.exports = { generateOfferLetter };
