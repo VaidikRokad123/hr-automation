@@ -1,6 +1,13 @@
 import { jsPDF } from 'jspdf';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Store the last generated offer letter data
+let lastOfferLetterData = null;
 
 export const generateOfferLetter = async (req, res) => {
     try {
@@ -23,7 +30,7 @@ export const generateOfferLetter = async (req, res) => {
         }
 
         const upperName = name.toUpperCase();
-        
+
         const inpDate = `Date: ${new Date().toLocaleDateString('en-GB', {
             day: 'numeric',
             month: 'long',
@@ -65,130 +72,303 @@ export const generateOfferLetter = async (req, res) => {
         let footer3 = `Name of the Trainee Accepting offer ${upperName}`;
         let footer4 = `Place of sole & exclusive Jurisdiction: Ahmedabad, Gujarat, India`;
 
-        const doc = new jsPDF();
+        // Structure data as array of pages with paragraphs
+        const structuredData = {
+            metadata: {
+                name,
+                upperName,
+                gender,
+                internType,
+                durationType,
+                duration,
+                role,
+                startDate,
+                endDate,
+                salaryType,
+                salaryAmount,
+                date: inpDate
+            },
+            pages: [
+                {
+                    pageNumber: 1,
+                    paragraphs: [
+                        { id: 'date', content: inpDate, type: 'date' },
+                        { id: 'to', content: to, type: 'to' },
+                        { id: 'subject', content: subject, type: 'subject' },
+                        { id: 'p1', content: firstParagraph, type: 'paragraph' },
+                        { id: 'p2', content: secondParagraph, type: 'paragraph' },
+                        { id: 'p3', content: salaryParagraph, type: 'paragraph' },
+                        { id: 'p4', content: thirdParagraph, type: 'paragraph' },
+                        { id: 'p5', content: t1, type: 'paragraph' },
+                        { id: 'p6', content: t2, type: 'paragraph' }
+                    ]
+                },
+                {
+                    pageNumber: 2,
+                    paragraphs: [
+                        { id: 'p7', content: t3, type: 'paragraph' },
+                        { id: 'director', content: director, type: 'signature' },
+                        { id: 'company', content: companyName, type: 'company' },
+                        { id: 'separator', content: spac, type: 'separator' },
+                        { id: 'footer1', content: footer1, type: 'paragraph' },
+                        { id: 'footer2', content: footer2, type: 'paragraph' },
+                        { id: 'footer3', content: footer3, type: 'paragraph' },
+                        { id: 'footer4', content: footer4, type: 'paragraph' }
+                    ]
+                }
+            ]
+        };
 
-        // Load images as base64
-        const templatePath = path.join(__dirname, '../public/images/offerletter/temp.png');
-        const signPath = path.join(__dirname, '../public/images/offerletter/sign2.png');
-        const transparentPath = path.join(__dirname, '../public/images/offerletter/transparent.png');
+        // Store the data for later retrieval
+        lastOfferLetterData = structuredData;
 
-        let template, sign, transparent;
-        
-        try {
-            template = fs.readFileSync(templatePath).toString('base64');
-            sign = fs.readFileSync(signPath).toString('base64');
-            transparent = fs.readFileSync(transparentPath).toString('base64');
-        } catch (error) {
-            console.error('Error loading images:', error);
-            return res.status(500).json({ error: 'Failed to load template images' });
-        }
+        // Generate PDF
+        const pdfPath = await generatePDFFromData(structuredData);
 
-        doc.addImage(`data:image/png;base64,${template}`, "PNG", 0, 0, 210, 297);
-        doc.setFontSize(11);
-
-        let yPosition = 45;
-
-        doc.text(inpDate, 150, yPosition);
-        yPosition += 15;
-        doc.addImage(`data:image/png;base64,${transparent}`, "PNG", 7, 55, 200, 200);
-
-        doc.text(to, 25, yPosition, { lineHeightFactor: 1.5 });
-        yPosition += 13;
-
-        doc.text(subject, doc.internal.pageSize.getWidth() / 2, yPosition, { align: "center" });
-        yPosition += 13;
-
-        doc.text(firstParagraph, 25, yPosition, {
-            maxWidth: 160,
-            align: "justify",
-            lineHeightFactor: 1.5
+        res.status(200).json({
+            message: `Offer letter generated successfully`,
+            path: pdfPath,
+            data: structuredData
         });
-        yPosition += doc.splitTextToSize(firstParagraph, 160).length * 6.5 + 5;
-
-        doc.text(secondParagraph, 25, yPosition, {
-            maxWidth: 160,
-            align: "justify",
-            lineHeightFactor: 1.5
-        });
-        yPosition += doc.splitTextToSize(secondParagraph, 160).length * 6.5 + 5;
-
-        doc.text(salaryParagraph, 25, yPosition, {
-            maxWidth: 160,
-            align: "justify",
-            lineHeightFactor: 1.5
-        });
-        yPosition += doc.splitTextToSize(salaryParagraph, 160).length * 6.5 + 5;
-
-        doc.text(thirdParagraph, 25, yPosition, {
-            maxWidth: 160,
-            align: "justify",
-            lineHeightFactor: 1.5
-        });
-        yPosition += doc.splitTextToSize(thirdParagraph, 160).length * 6.5 + 3;
-
-        doc.text(t1, 25, yPosition, {
-            maxWidth: 160,
-            align: "justify",
-            lineHeightFactor: 1.5
-        });
-        yPosition += doc.splitTextToSize(t1, 160).length * 6.5 + 3;
-
-        doc.text(t2, 25, yPosition, {
-            maxWidth: 160,
-            align: "justify",
-            lineHeightFactor: 1.5
-        });
-        yPosition += doc.splitTextToSize(t2, 160).length * 6.5 + 3;
-
-        doc.addPage();
-        doc.addImage(`data:image/png;base64,${template}`, "PNG", 0, 0, 210, 297);
-        doc.addImage(`data:image/png;base64,${transparent}`, "PNG", 7, 55, 200, 200);
-        yPosition = 45;
-
-        doc.text(t3, 25, yPosition, {
-            maxWidth: 160,
-            align: "justify",
-            lineHeightFactor: 1.5
-        });
-        yPosition += doc.splitTextToSize(t3, 160).length * 6.5 + 3;
-
-        doc.text(director, 25, yPosition, { lineHeightFactor: 1.5 });
-        yPosition += 15;
-
-        doc.addImage(`data:image/png;base64,${sign}`, "PNG", 25, yPosition, 40, 20);
-        yPosition += 25;
-
-        doc.text(companyName, 25, yPosition);
-        yPosition += 10;
-
-        doc.text(spac, doc.internal.pageSize.getWidth() / 2, yPosition, { align: "center" });
-        yPosition += 10;
-
-        doc.text(footer1, 25, yPosition, {
-            maxWidth: 160,
-            align: "justify",
-            lineHeightFactor: 1.5
-        });
-        yPosition += doc.splitTextToSize(footer1, 160).length * 6.5 + 3;
-
-        doc.text(footer2, 25, yPosition);
-        yPosition += 10;
-        
-        doc.text(footer3, 25, yPosition);
-        yPosition += 10;
-
-        doc.text(footer4, 25, yPosition);
-
-        // Generate PDF as buffer
-        const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
-
-        // Set headers for PDF download
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${internType}_Letter_${upperName}.pdf"`);
-        res.send(pdfBuffer);
 
     } catch (error) {
         console.error('Error generating PDF:', error);
         res.status(500).json({ error: 'Failed to generate PDF', details: error.message });
     }
 };
+
+// Get the last generated offer letter data
+export const getOfferLetterData = async (req, res) => {
+    try {
+        if (!lastOfferLetterData) {
+            return res.status(404).json({ error: 'No offer letter data found. Please generate an offer letter first.' });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: lastOfferLetterData
+        });
+    } catch (error) {
+        console.error('Error fetching offer letter data:', error);
+        res.status(500).json({ error: 'Failed to fetch offer letter data', details: error.message });
+    }
+};
+
+// Compile edited offer letter
+export const compileOfferLetter = async (req, res) => {
+    try {
+        const { pages, metadata } = req.body;
+
+        if (!pages || !Array.isArray(pages)) {
+            return res.status(400).json({ error: 'Invalid data format. Pages array is required.' });
+        }
+
+        const structuredData = {
+            metadata: metadata || lastOfferLetterData?.metadata || {},
+            pages
+        };
+
+        // Generate PDF from edited data
+        const pdfPath = await generatePDFFromData(structuredData);
+
+        // Update stored data
+        lastOfferLetterData = structuredData;
+
+        res.status(200).json({
+            message: 'Offer letter compiled successfully',
+            path: pdfPath,
+            data: structuredData
+        });
+
+    } catch (error) {
+        console.error('Error compiling PDF:', error);
+        res.status(500).json({ error: 'Failed to compile PDF', details: error.message });
+    }
+};
+
+// Helper function to generate PDF from structured data
+async function generatePDFFromData(data) {
+    const doc = new jsPDF();
+
+    // Load images as base64
+    const templatePath = path.join(__dirname, '../public/images/offerletter/temp.jpg');
+    const signPath = path.join(__dirname, '../public/images/offerletter/sign2.png');
+    const transparentPath = path.join(__dirname, '../public/images/offerletter/transparent.png');
+
+    let template, sign, transparent;
+
+    try {
+        template = fs.readFileSync(templatePath).toString('base64');
+        sign = fs.readFileSync(signPath).toString('base64');
+        transparent = fs.readFileSync(transparentPath).toString('base64');
+    } catch (error) {
+        console.error('Error loading images:', error);
+        throw new Error('Failed to load template images');
+    }
+
+    // Process each page
+    data.pages.forEach((page, pageIndex) => {
+        if (pageIndex > 0) {
+            doc.addPage();
+        }
+
+        doc.addImage(`data:image/png;base64,${template}`, "JPG", 0, 0, 210, 297);
+        doc.setFontSize(11);
+
+        let yPosition = 45;
+
+        // if (pageIndex === 0) {
+        //     doc.addImage(`data:image/png;base64,${transparent}`, "PNG", 7, 55, 200, 200);
+        // } else {
+        //     doc.addImage(`data:image/png;base64,${transparent}`, "PNG", 7, 55, 200, 200);
+        // }
+
+        // Process each paragraph
+        page.paragraphs.forEach((para) => {
+            if (!para.content || para.content.trim() === '') return;
+
+            // Check if content is single line (less than 80 characters and no newlines)
+            const isSingleLine = para.content.length < 80 && !para.content.includes('\n');
+            const isToField = para.type === 'to' || para.id === 'to';
+
+            switch (para.type) {
+                case 'date':
+                    doc.text(para.content, 150, yPosition);
+                    yPosition += 15;
+                    break;
+
+                case 'to':
+                    // TO field - left aligned, no justify
+                    doc.text(para.content, 25, yPosition, { lineHeightFactor: 1.5 });
+                    yPosition += 13;
+                    break;
+
+                case 'subject':
+                    // Subject - center aligned, no justify
+                    doc.text(para.content, doc.internal.pageSize.getWidth() / 2, yPosition, { align: "center" });
+                    yPosition += 13;
+                    break;
+
+                case 'paragraph':
+                    // Paragraphs - justify unless single line
+                    if (isSingleLine) {
+                        doc.text(para.content, 25, yPosition, {
+                            maxWidth: 160,
+                            align: "left",
+                            lineHeightFactor: 1.5
+                        });
+                    } else {
+                        doc.text(para.content, 25, yPosition, {
+                            maxWidth: 160,
+                            align: "justify",
+                            lineHeightFactor: 1.5
+                        });
+                    }
+                    yPosition += doc.splitTextToSize(para.content, 160).length * 6.5 + 5;
+                    break;
+
+                case 'signature':
+                    doc.text(para.content, 25, yPosition, { lineHeightFactor: 1.5 });
+                    yPosition += 15;
+                    doc.addImage(`data:image/png;base64,${sign}`, "PNG", 25, yPosition, 40, 20);
+                    yPosition += 25;
+                    break;
+
+                case 'company':
+                    // Company - treat as paragraph
+                    if (isSingleLine) {
+                        doc.text(para.content, 25, yPosition, {
+                            maxWidth: 160,
+                            align: "left",
+                            lineHeightFactor: 1.5
+                        });
+                    } else {
+                        doc.text(para.content, 25, yPosition, {
+                            maxWidth: 160,
+                            align: "justify",
+                            lineHeightFactor: 1.5
+                        });
+                    }
+                    yPosition += doc.splitTextToSize(para.content, 160).length * 6.5 + 5;
+                    break;
+
+                case 'separator':
+                    doc.text(para.content, doc.internal.pageSize.getWidth() / 2, yPosition, { align: "center" });
+                    yPosition += 10;
+                    break;
+
+                case 'footer':
+                    // Footer - treat as regular paragraph
+                    if (isSingleLine) {
+                        doc.text(para.content, 25, yPosition, {
+                            maxWidth: 160,
+                            align: "left",
+                            lineHeightFactor: 1.5
+                        });
+                    } else {
+                        doc.text(para.content, 25, yPosition, {
+                            maxWidth: 160,
+                            align: "justify",
+                            lineHeightFactor: 1.5
+                        });
+                    }
+                    yPosition += doc.splitTextToSize(para.content, 160).length * 6.5 + 5;
+                    break;
+
+                case 'image':
+                    // Handle custom images
+                    try {
+                        doc.addImage(para.content, "PNG", 25, yPosition, 160, 80);
+                        yPosition += 85;
+                    } catch (err) {
+                        console.error('Error adding image:', err);
+                    }
+                    break;
+
+                default:
+                    // Default - justify unless single line
+                    if (isSingleLine || isToField) {
+                        doc.text(para.content, 25, yPosition, {
+                            maxWidth: 160,
+                            align: "left",
+                            lineHeightFactor: 1.5
+                        });
+                    } else {
+                        doc.text(para.content, 25, yPosition, {
+                            maxWidth: 160,
+                            align: "justify",
+                            lineHeightFactor: 1.5
+                        });
+                    }
+                    yPosition += doc.splitTextToSize(para.content, 160).length * 6.5 + 5;
+            }
+        });
+    });
+
+    // Folder path
+    const pdfPath = "../backend/GeneratedOfferLetter";
+    const folderPath = path.join(process.cwd(), pdfPath);
+
+    // Create folder if not exists
+    if (!fs.existsSync(folderPath)) {
+        fs.mkdirSync(folderPath, { recursive: true });
+    }
+
+    // File name with timestamp to avoid caching
+    const upperName = data.metadata.upperName || 'UNKNOWN';
+    const internType = data.metadata.internType || 'internship';
+    const timestamp = Date.now();
+    const fileName = `${internType}_Letter_${upperName}_${timestamp}.pdf`;
+
+    // Final output path
+    const outputFile = path.join(folderPath, fileName);
+
+    // Generate PDF as buffer and save to file
+    const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
+    fs.writeFileSync(outputFile, pdfBuffer);
+
+    console.log(`PDF generated: ${outputFile}`);
+
+    return `http://localhost:5000/GeneratedOfferLetter/${fileName}`;
+}
+

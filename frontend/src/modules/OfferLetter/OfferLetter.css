@@ -1,59 +1,217 @@
-.OfferLetter {
+.OfferLetterContainer {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  min-height: 100vh;
+  background: #f7fafc;
+  position: relative;
+}
+
+.notification-popup {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #48bb78;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+  font-weight: 600;
+  z-index: 1000;
+  animation: slideInBottom 0.3s ease-out;
+}
+
+@keyframes slideInBottom {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.FormSection {
+  flex: 0 0 400px;
   background: white;
   padding: 30px;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  max-width: 600px;
-  margin: 0 auto;
+  height: fit-content;
+  overflow-y: auto;
+  max-height: calc(100vh - 40px);
 }
 
-.OfferLetter h2 {
+.PreviewSection {
+  flex: 1;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.FormSection h2,
+.PreviewSection h2 {
   margin-top: 0;
   color: #2d3748;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
+  font-size: 1.5rem;
 }
 
-.OfferLetter input[type="text"],
-.OfferLetter input[type="number"],
-.OfferLetter input[type="date"] {
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #4a5568;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="date"] {
   width: 100%;
-  padding: 10px;
-  margin: 10px 0;
+  padding: 10px 12px;
   border: 1px solid #cbd5e0;
   border-radius: 5px;
   font-size: 1rem;
   box-sizing: border-box;
+  transition: border-color 0.3s ease;
 }
 
-.OfferLetter input[type="radio"] {
-  margin: 10px 5px 10px 15px;
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group input[type="date"]:focus {
+  outline: none;
+  border-color: #3182ce;
+}
+
+.radio-group {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: normal;
+  color: #2d3748;
+}
+
+.radio-group input[type="radio"] {
+  margin-right: 6px;
   cursor: pointer;
 }
 
-.OfferLetter label {
-  margin-right: 15px;
-  cursor: pointer;
+.error-message {
+  color: #e53e3e;
+  background: #fff5f5;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  border-left: 4px solid #e53e3e;
 }
 
-.OfferLetter button {
+.FormSection button {
   width: 100%;
   padding: 12px;
-  margin-top: 20px;
-  background-color: #3182ce;
-  color: white;
+  margin-top: 10px;
   border: none;
   border-radius: 5px;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
-.OfferLetter button:hover:not(:disabled) {
+.generate-btn {
+  background-color: #3182ce;
+  color: white;
+}
+
+.generate-btn:hover:not(:disabled) {
   background-color: #2c5282;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(49, 130, 206, 0.3);
 }
 
-.OfferLetter button:disabled {
+.generate-btn:disabled {
   background-color: #a0aec0;
   cursor: not-allowed;
+  transform: none;
+}
+
+.advanced-btn {
+  background-color: #805ad5;
+  color: white;
+}
+
+.advanced-btn:hover {
+  background-color: #6b46c1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(128, 90, 213, 0.3);
+}
+
+.download-btn {
+  background-color: #48bb78;
+  color: white;
+}
+
+.download-btn:hover {
+  background-color: #38a169;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(72, 187, 120, 0.3);
+}
+
+.pdf-viewer {
+  width: 100%;
+  flex: 1;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  min-height: 600px;
+}
+
+.no-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #718096;
+  text-align: center;
+}
+
+.no-preview p:first-child {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.no-preview p:last-child {
+  font-size: 0.95rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .OfferLetterContainer {
+    flex-direction: column;
+  }
+
+  .FormSection {
+    flex: 1;
+    max-height: none;
+  }
+
+  .PreviewSection {
+    min-height: 600px;
+  }
 }

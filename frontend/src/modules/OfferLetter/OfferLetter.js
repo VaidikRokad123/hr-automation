@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import './OfferLetter.css';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function OfferLetter() {
+  const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [gender, setGender] = useState("");
@@ -17,6 +19,7 @@ function OfferLetter() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [pdfPath, setPdfPath] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
 
   async function generateOfferLetter() {
     try {
@@ -40,7 +43,9 @@ function OfferLetter() {
 
       setPdfPath(response.data.path);
 
-      alert(`Offer letter generated successfully!`);
+      // Show notification
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000);
 
     } catch (err) {
       console.error('Error generating offer letter:', err);
@@ -50,54 +55,159 @@ function OfferLetter() {
     }
   }
 
-  function openFilePath() {
-
+  function downloadPDF() {
     if (!pdfPath) {
-      alert("Generate offer letter first");
+      setError("Generate offer letter first");
       return;
     }
 
+    // Open PDF in new tab
     window.open(pdfPath, "_blank");
   }
 
+  function openAdvancedEditor() {
+    if (!pdfPath) {
+      setError("Generate offer letter first before editing");
+      return;
+    }
+
+    navigate('/advanced-editor', { state: { pdfUrl: pdfPath } });
+  }
+
   return (
-    <div className="OfferLetter">
-      <h2>Offer Letter Generator</h2>
-
-      <input type="text" placeholder='name' value={name} onChange={(e) => setName(e.target.value)} />
-      <br></br><input type="radio" name="gender" value="male" checked={gender === "male"} onChange={() => setGender("male")} /> male
-      <input type="radio" name="gender" value="female" checked={gender === "female"} onChange={() => setGender("female")} /> female
-
-      <br></br><input type="radio" name="typejob" value="internship" checked={internType === "internship"} onChange={() => setInternType("internship")} /> internship
-      <input type="radio" name="typejob" value="part time" checked={internType === "part time"} onChange={() => setInternType("part time")} /> part_time
-      <input type="radio" name="typejob" value="full time" checked={internType === "full time"} onChange={() => setInternType("full time")} /> full_time
-
-      <br></br><input type="radio" name="duration" value="month" checked={durationType === "month"} onChange={() => setDurationType("month")} /> month
-      <input type="radio" name="duration" value="year" checked={durationType === "year"} onChange={() => setDurationType("year")} /> year
-
-      <br></br><input type="number" placeholder='duration (e.g. 2)' value={duration} onChange={(e) => setDuration(e.target.value)} />
-      <br></br><input type="text" placeholder='role' value={role} onChange={(e) => setRole(e.target.value)} />
-      <br></br><input type="date" placeholder='startDate' value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-      <br></br><input type="date" placeholder='endDate' value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-
-      <br></br><input type="radio" name="salary" value="paid" checked={salaryType === "paid"} onChange={() => setSalaryType("paid")} /> paid
-      <input type="radio" name="salary" value="unpaid" checked={salaryType === "unpaid"} onChange={() => setSalaryType("unpaid")} /> unpaid
-
-      <br></br>{salaryType === "paid" && (
-        <input type="text" placeholder='Enter salary amount' value={salaryAmount} onChange={(e) => setSalaryAmount(e.target.value)} />
+    <div className="OfferLetterContainer">
+      {showNotification && (
+        <div className="notification-popup">
+          ✓ Offer letter generated successfully!
+        </div>
       )}
 
-      {error && <div style={{ color: 'red', margin: '10px 0' }}>{error}</div>}
+      <div className="FormSection">
+        <h2>Offer Letter Generator</h2>
 
-      <button onClick={() => generateOfferLetter()} disabled={loading}>
-        {loading ? 'Generating Offer Letter...' : 'Generate Offer Letter'}
-      </button>
+        <div className="form-group">
+          <label>Name</label>
+          <input type="text" placeholder='Enter name' value={name} onChange={(e) => setName(e.target.value)} />
+        </div>
 
-      <button onClick={() => openFilePath()}>
-        open file path
-      </button>
+        <div className="form-group">
+          <label>Gender</label>
+          <div className="radio-group">
+            <label>
+              <input type="radio" name="gender" value="male" checked={gender === "male"} onChange={() => setGender("male")} />
+              Male
+            </label>
+            <label>
+              <input type="radio" name="gender" value="female" checked={gender === "female"} onChange={() => setGender("female")} />
+              Female
+            </label>
+          </div>
+        </div>
 
-    </div >
+        <div className="form-group">
+          <label>Job Type</label>
+          <div className="radio-group">
+            <label>
+              <input type="radio" name="typejob" value="internship" checked={internType === "internship"} onChange={() => setInternType("internship")} />
+              Internship
+            </label>
+            <label>
+              <input type="radio" name="typejob" value="part time" checked={internType === "part time"} onChange={() => setInternType("part time")} />
+              Part Time
+            </label>
+            <label>
+              <input type="radio" name="typejob" value="full time" checked={internType === "full time"} onChange={() => setInternType("full time")} />
+              Full Time
+            </label>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>Duration Type</label>
+          <div className="radio-group">
+            <label>
+              <input type="radio" name="duration" value="month" checked={durationType === "month"} onChange={() => setDurationType("month")} />
+              Month
+            </label>
+            <label>
+              <input type="radio" name="duration" value="year" checked={durationType === "year"} onChange={() => setDurationType("year")} />
+              Year
+            </label>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>Duration</label>
+          <input type="number" placeholder='e.g. 2' value={duration} onChange={(e) => setDuration(e.target.value)} />
+        </div>
+
+        <div className="form-group">
+          <label>Role</label>
+          <input type="text" placeholder='Enter role' value={role} onChange={(e) => setRole(e.target.value)} />
+        </div>
+
+        <div className="form-group">
+          <label>Start Date</label>
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+        </div>
+
+        <div className="form-group">
+          <label>End Date</label>
+          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+        </div>
+
+        <div className="form-group">
+          <label>Salary Type</label>
+          <div className="radio-group">
+            <label>
+              <input type="radio" name="salary" value="paid" checked={salaryType === "paid"} onChange={() => setSalaryType("paid")} />
+              Paid
+            </label>
+            <label>
+              <input type="radio" name="salary" value="unpaid" checked={salaryType === "unpaid"} onChange={() => setSalaryType("unpaid")} />
+              Unpaid
+            </label>
+          </div>
+        </div>
+
+        {salaryType === "paid" && (
+          <div className="form-group">
+            <label>Salary Amount</label>
+            <input type="text" placeholder='Enter salary amount' value={salaryAmount} onChange={(e) => setSalaryAmount(e.target.value)} />
+          </div>
+        )}
+
+        {error && <div className="error-message">{error}</div>}
+
+        <button onClick={() => generateOfferLetter()} disabled={loading} className="generate-btn">
+          {loading ? 'Generating...' : 'Generate Offer Letter'}
+        </button>
+
+        <button onClick={() => openAdvancedEditor()} className="advanced-btn">
+          Advanced Edit
+        </button>
+
+        <button onClick={() => downloadPDF()} className="download-btn">
+          Download PDF
+        </button>
+      </div>
+
+      <div className="PreviewSection">
+        <h2>PDF Preview</h2>
+        {pdfPath ? (
+          <iframe
+            src={pdfPath}
+            title="Offer Letter Preview"
+            className="pdf-viewer"
+          />
+        ) : (
+          <div className="no-preview">
+            <p>No PDF generated yet</p>
+            <p>Fill in the form and click "Generate Offer Letter" to see the preview</p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 

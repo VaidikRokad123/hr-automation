@@ -3,7 +3,7 @@ import cors from 'cors';
 import path from 'path';
 
 import offerLetterRoutes from './routes/offerLetterRoutes.js';
-import wkhtmlOfferLetterRoutes from './routes/wkhtmlOfferLetterRoutes.js';
+// import wkhtmlOfferLetterRoutes from './routes/wkhtmlOfferLetterRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,7 +25,7 @@ app.use(
 );
 
 // Routes
-app.use('/api/offerletter', wkhtmlOfferLetterRoutes);
+app.use('/api/offerletter', offerLetterRoutes);
 
 app.get('/', (req, res) => {
     res.json({ message: 'HR Management API is running' });
