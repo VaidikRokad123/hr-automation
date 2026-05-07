@@ -34,6 +34,161 @@ function escapeHtml(text = '') {
         .replace(/'/g, '&#039;');
 }
 
+function stripHtml(text = '') {
+    return String(text).replace(/<[^>]*>/g, '');
+}
+
+const TOP_PADDING_MM = 30;
+const SIDE_PADDING_MM = 25;
+const BOTTOM_SAFE_MM = 34;
+const PAGE_HEIGHT_MM = 297;
+const CONTENT_MAX_HEIGHT_MM = PAGE_HEIGHT_MM - TOP_PADDING_MM - BOTTOM_SAFE_MM;
+
+function estimateBlockHeightMm(para, metadata) {
+    const content = replaceVariables(para.content || '', metadata);
+    const plainText = stripHtml(content).trim();
+
+    switch (para.type) {
+        case 'date':
+            return 10;
+        case 'to':
+            return 13;
+        case 'subject':
+            return 10;
+        case 'signature':
+            return 30;
+        case 'company':
+            return 8;
+        case 'separator':
+            return 8;
+        case 'image':
+            return 55;
+        default: {
+            const approxCharsPerLine = 90;
+            const lines = Math.max(1, Math.ceil(plainText.length / approxCharsPerLine));
+            const listItemBuffer = /^\s*\d+\)/.test(plainText) ? 4 : 3;
+            return (lines * 5.4) + listItemBuffer;
+        }
+    }
+}
+
+function splitParagraphToFit(para, metadata, maxHeightMm) {
+    const rawText = replaceVariables(para.content || '', metadata);
+    const words = stripHtml(rawText).split(/\s+/).filter(Boolean);
+    if (words.length === 0) return [para];
+
+    const chunks = [];
+    let current = [];
+    let index = 1;
+
+    for (const word of words) {
+        const next = [...current, word].join(' ');
+        const testPara = { ...para, content: next };
+        if (estimateBlockHeightMm(testPara, metadata) <= maxHeightMm || current.length === 0) {
+            current.push(word);
+            continue;
+        }
+
+        chunks.push({
+            ...para,
+            id: `${para.id || 'p'}_part_${index++}`,
+            content: current.join(' ')
+        });
+        current = [word];
+    }
+
+    if (current.length > 0) {
+        chunks.push({
+            ...para,
+            id: `${para.id || 'p'}_part_${index}`,
+            content: current.join(' ')
+        });
+    }
+
+    return chunks.length ? chunks : [para];
+}
+
+function repaginateForFooterSafety(pages, metadata) {
+    const repaginated = [];
+    let pageNumber = 1;
+
+    for (const page of pages) {
+        let currentParagraphs = [];
+        let currentHeight = 0;
+
+        for (const para of page.paragraphs || []) {
+            const pageUsableHeight = CONTENT_MAX_HEIGHT_MM;
+            const blockHeight = estimateBlockHeightMm(para, metadata);
+            const blocks = blockHeight > (pageUsableHeight * 1.15) && para.type === 'paragraph'
+                ? splitParagraphToFit(para, metadata, pageUsableHeight)
+                : [para];
+
+            for (const block of blocks) {
+                const h = estimateBlockHeightMm(block, metadata);
+                const willOverflow = (currentHeight + h) > pageUsableHeight;
+
+                if (willOverflow && currentParagraphs.length > 0) {
+                    repaginated.push({ pageNumber: pageNumber++, paragraphs: currentParagraphs });
+                    currentParagraphs = [];
+                    currentHeight = 0;
+                }
+
+                currentParagraphs.push(block);
+                currentHeight += h;
+            }
+        }
+
+        if (currentParagraphs.length > 0) {
+            repaginated.push({ pageNumber: pageNumber++, paragraphs: currentParagraphs });
+        }
+    }
+
+    return repaginated;
+}
+
+// Replace template variables with actual values
+function replaceVariables(text, metadata) {
+    if (!text || typeof text !== 'string') return text;
+    
+    // Format dates nicely
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '';
+        return new Date(dateStr).toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }).replace(/(\d+)/, (day) => {
+            const suffix = day > 3 && day < 21 ? 'th' : ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'][day % 10];
+            return day + suffix;
+        });
+    };
+
+    // Create a map of variables to their values
+    const variables = {
+        name: metadata.name || '',
+        upperName: metadata.upperName || metadata.name?.toUpperCase() || '',
+        gender: metadata.gender || '',
+        internType: metadata.internType || '',
+        durationType: metadata.durationType || '',
+        duration: metadata.duration || '',
+        role: metadata.role || '',
+        startDate: formatDate(metadata.startDate),
+        endDate: formatDate(metadata.endDate),
+        salaryType: metadata.salaryType || '',
+        salaryAmount: metadata.salaryAmount || '',
+        date: metadata.date || ''
+    };
+
+    // Replace all ${variable} patterns
+    let result = text;
+    for (const [key, value] of Object.entries(variables)) {
+        const regex = new RegExp(`\\$\\{${key}\\}`, 'g');
+        result = result.replace(regex, value);
+    }
+
+    return result;
+}
+
 export const generateOfferLetter = async (req, res) => {
     try {
         const {
@@ -208,44 +363,48 @@ async function generatePDFFromData(data) {
         const transparentUrl = transparentPath ? toFileUrl(transparentPath) : null;
 
         let htmlContent = '';
+        const safePages = repaginateForFooterSafety(data.pages || [], data.metadata || {});
 
-        data.pages.forEach((page, pageIndex) => {
+        safePages.forEach((page, pageIndex) => {
             htmlContent += `<section class="pdf-page ${pageIndex > 0 ? 'next-page' : ''}">`;
             htmlContent += `<div class="page-content">`;
 
             page.paragraphs.forEach((para) => {
                 if (!para.content || para.content.trim() === '') return;
 
+                // Replace template variables with actual values
+                const processedContent = replaceVariables(para.content, data.metadata);
+
                 switch (para.type) {
                     case 'date':
-                        htmlContent += `<div class="date">${escapeHtml(para.content)}</div>`;
+                        htmlContent += `<div class="date">${escapeHtml(processedContent)}</div>`;
                         break;
                     case 'to':
-                        htmlContent += `<div class="to-line">${para.content}</div>`;
+                        htmlContent += `<div class="to-line">${processedContent}</div>`;
                         break;
                     case 'subject':
-                        htmlContent += `<div class="subject">${escapeHtml(para.content)}</div>`;
+                        htmlContent += `<div class="subject">${escapeHtml(processedContent)}</div>`;
                         break;
                     case 'paragraph':
-                        htmlContent += `<div class="paragraph-block avoid-break"><p>${escapeHtml(para.content)}</p></div>`;
+                        htmlContent += `<div class="paragraph-block avoid-break"><p>${escapeHtml(processedContent)}</p></div>`;
                         break;
                     case 'signature':
-                        htmlContent += `<div class="signature-block avoid-break"><div>${para.content}</div><img src="${signUrl}" class="sign" /></div>`;
+                        htmlContent += `<div class="signature-block avoid-break"><div>${processedContent}</div><img src="${signUrl}" class="sign" /></div>`;
                         break;
                     case 'company':
-                        htmlContent += `<div class="company-name">${escapeHtml(para.content)}</div>`;
+                        htmlContent += `<div class="company-name">${escapeHtml(processedContent)}</div>`;
                         break;
                     case 'separator':
-                        htmlContent += `<div class="center separator">${escapeHtml(para.content)}</div>`;
+                        htmlContent += `<div class="center separator">${escapeHtml(processedContent)}</div>`;
                         break;
                     case 'footer':
-                        htmlContent += `<div class="paragraph-block avoid-break"><p>${escapeHtml(para.content)}</p></div>`;
+                        htmlContent += `<div class="paragraph-block avoid-break"><p>${escapeHtml(processedContent)}</p></div>`;
                         break;
                     case 'image':
                         htmlContent += `<div style="margin:10mm 0;"><img src="${para.content}" style="max-width:100%;height:auto;" /></div>`;
                         break;
                     default:
-                        htmlContent += `<div class="paragraph-block avoid-break"><p>${escapeHtml(para.content)}</p></div>`;
+                        htmlContent += `<div class="paragraph-block avoid-break"><p>${escapeHtml(processedContent)}</p></div>`;
                 }
             });
 
@@ -278,6 +437,8 @@ body{
     color:#000;
     print-color-adjust:exact;
     -webkit-print-color-adjust:exact;
+    word-spacing: 0;
+    letter-spacing: 0;
 }
 
 /* Independent fixed-size page container to prevent split/cut backgrounds. */
@@ -315,21 +476,37 @@ body{
 }
 
 .page-content{
-    padding:45mm 25mm 18mm 25mm;
+    padding:${TOP_PADDING_MM}mm ${SIDE_PADDING_MM}mm ${BOTTOM_SAFE_MM}mm ${SIDE_PADDING_MM}mm;
     position:relative;
     z-index:1;
     font-size:11pt;
     line-height:1.5;
+    min-height:${CONTENT_MAX_HEIGHT_MM}mm;
+    overflow:visible;
 }
 
 p{
     text-align:justify;
     margin:0;
     line-height:1.5;
+    word-spacing: 0;
+    letter-spacing: 0;
+    text-justify: inter-word;
 }
 
 .paragraph-block{
     margin-bottom:5mm;
+    padding-bottom: 2mm;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.paragraph-block p{
+    text-align:justify;
+    word-spacing: 0;
+    letter-spacing: 0;
+    white-space: normal;
+    margin-bottom: 2mm;
 }
 
 .avoid-break{
@@ -341,6 +518,7 @@ p{
     text-align:left;
     margin-left:125mm;
     margin-bottom:8mm;
+    padding-bottom: 2mm;
 }
 
 .subject{
@@ -348,31 +526,51 @@ p{
     font-weight:700;
     margin-top:5mm;
     margin-bottom:5mm;
+    padding-bottom: 2mm;
 }
 
 .to-line{
     line-height:1.5;
     margin-bottom:5mm;
+    padding-bottom: 2mm;
 }
 
 .signature-block{
     margin-top:8mm;
     line-height:1.5;
+    margin-bottom: 5mm;
+    padding-bottom: 3mm;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    display: block;
+}
+
+.signature-block div{
+    margin-bottom: 2mm;
+}
+
+.signature-block img{
+    display: block;
+    margin-top: 3mm;
 }
 
 .company-name{
     margin-top:5mm;
+    margin-bottom: 5mm;
+    padding-bottom: 3mm;
 }
 
 .separator{
     margin-top:5mm;
     margin-bottom:5mm;
+    padding-bottom: 3mm;
 }
 
 .sign{
     width:40mm;
     height:auto;
-    margin-top:6mm;
+    margin-top:0;
+    margin-bottom: 0;
     image-rendering:auto;
 }
 
@@ -421,7 +619,9 @@ ${htmlContent}
             disableSmartShrinking: true,
             dpi: 300,
             imageDpi: 300,
-            imageQuality: 100
+            imageQuality: 100,
+            encoding: 'UTF-8',
+            minimumFontSize: 11
         }, function (err) {
             if (err) {
                 console.log(err);

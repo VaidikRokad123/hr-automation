@@ -162,7 +162,25 @@
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   overflow-y: auto;
-  max-height: calc(100vh - 100px);
+  max-height: calc(100vh - 120px);
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
 }
 
 .sidebar-section {
@@ -173,6 +191,13 @@
   margin: 0 0 15px 0;
   color: #2d3748;
   font-size: 1.1rem;
+}
+
+.helper-text {
+  font-size: 0.8rem;
+  color: #718096;
+  margin: 0 0 10px 0;
+  font-style: italic;
 }
 
 .add-page-btn,
@@ -238,6 +263,33 @@
   background: #f56565;
 }
 
+/* Predefined Variables */
+.variables-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.variable-btn {
+  width: 100%;
+  padding: 8px 10px;
+  background: #e6fffa;
+  color: #234e52;
+  border: 1px solid #81e6d9;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-align: left;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.variable-btn:hover {
+  background: #b2f5ea;
+  border-color: #4fd1c5;
+  transform: translateX(2px);
+}
+
 /* Editor Area */
 .editor-area {
   flex: 1;
@@ -273,6 +325,25 @@
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+  max-height: calc(100vh - 220px);
+}
+
+.editor-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.editor-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 5px;
+}
+
+.editor-content::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 5px;
+}
+
+.editor-content::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
 }
 
 .paragraph-editor {
@@ -441,6 +512,7 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
+  max-height: calc(100vh - 120px);
 }
 
 .preview-section h3 {
@@ -455,6 +527,26 @@
   border: 1px solid #e2e8f0;
   border-radius: 5px;
   min-height: 500px;
+  overflow: auto;
+}
+
+.pdf-preview::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.pdf-preview::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 5px;
+}
+
+.pdf-preview::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 5px;
+}
+
+.pdf-preview::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
 }
 
 .no-pdf {

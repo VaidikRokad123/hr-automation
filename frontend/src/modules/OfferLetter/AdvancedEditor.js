@@ -16,6 +16,7 @@ function AdvancedEditor() {
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
   const fileInputRef = useRef(null);
+  const textareaRefs = useRef({});
 
   // Fetch data from backend on component mount
   useEffect(() => {
@@ -241,6 +242,50 @@ function AdvancedEditor() {
     navigate('/');
   };
 
+  // Insert predefined data at cursor position
+  const insertAtCursor = (paragraphIndex, variable) => {
+    const textarea = textareaRefs.current[`${currentPageIndex}-${paragraphIndex}`];
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentContent = currentPage.paragraphs[paragraphIndex].content;
+    
+    const newContent = 
+      currentContent.substring(0, start) + 
+      variable + 
+      currentContent.substring(end);
+    
+    updateParagraph(paragraphIndex, newContent);
+    
+    // Set cursor position after inserted text
+    setTimeout(() => {
+      textarea.focus();
+      const newPosition = start + variable.length;
+      textarea.setSelectionRange(newPosition, newPosition);
+    }, 0);
+    
+    setNotificationMessage(`Inserted ${variable}`);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 1500);
+  };
+
+  // Predefined data variables
+  const predefinedVariables = [
+    { label: 'Name', value: '${name}' },
+    { label: 'Upper Name', value: '${upperName}' },
+    { label: 'Gender', value: '${gender}' },
+    { label: 'Intern Type', value: '${internType}' },
+    { label: 'Duration Type', value: '${durationType}' },
+    { label: 'Duration', value: '${duration}' },
+    { label: 'Role', value: '${role}' },
+    { label: 'Start Date', value: '${startDate}' },
+    { label: 'End Date', value: '${endDate}' },
+    { label: 'Salary Type', value: '${salaryType}' },
+    { label: 'Salary Amount', value: '${salaryAmount}' },
+    { label: 'Date', value: '${date}' }
+  ];
+
   if (loading) {
     return (
       <div className="AdvancedEditor">
@@ -332,6 +377,40 @@ function AdvancedEditor() {
               style={{ display: 'none' }}
             />
           </div>
+
+          <div className="sidebar-section">
+            <h3>Predefined Data</h3>
+            <p className="helper-text">Click to insert at cursor</p>
+            <div className="variables-list">
+              {predefinedVariables.map((variable, idx) => (
+                <button
+                  key={idx}
+                  className="variable-btn"
+                  onClick={() => {
+                    // Find the currently focused textarea
+                    const focusedKey = Object.keys(textareaRefs.current).find(key => {
+                      const textarea = textareaRefs.current[key];
+                      return textarea && document.activeElement === textarea;
+                    });
+                    
+                    if (focusedKey) {
+                      const [pageIdx, paraIdx] = focusedKey.split('-').map(Number);
+                      if (pageIdx === currentPageIndex) {
+                        insertAtCursor(paraIdx, variable.value);
+                      }
+                    } else {
+                      setNotificationMessage('Please click in a text field first');
+                      setShowNotification(true);
+                      setTimeout(() => setShowNotification(false), 2000);
+                    }
+                  }}
+                  title={`Insert ${variable.value}`}
+                >
+                  {variable.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Center - Editor Area */}
@@ -398,6 +477,7 @@ function AdvancedEditor() {
                   </div>
                 ) : (
                   <textarea
+                    ref={(el) => textareaRefs.current[`${currentPageIndex}-${index}`] = el}
                     value={para.content}
                     onChange={(e) => updateParagraph(index, e.target.value)}
                     placeholder="Enter text content..."
