@@ -40,9 +40,60 @@ function stripHtml(text = '') {
 
 const TOP_PADDING_MM = 30;
 const SIDE_PADDING_MM = 25;
-const BOTTOM_SAFE_MM = 30;
+const BOTTOM_SAFE_MM = 28;
 const PAGE_HEIGHT_MM = 297;
 const CONTENT_MAX_HEIGHT_MM = PAGE_HEIGHT_MM - TOP_PADDING_MM - BOTTOM_SAFE_MM;
+const CONTENT_WIDTH_MM = 210 - (SIDE_PADDING_MM * 2);
+const BASE_FONT_SIZE_PT = 11;
+const BASE_FONT_LINE_HEIGHT = 1.5;
+const FONT_MM = BASE_FONT_SIZE_PT * 0.352778;
+const LINE_MM = FONT_MM * BASE_FONT_LINE_HEIGHT;
+
+function estimateTextUnits(text = '') {
+    let units = 0;
+    for (const ch of text) {
+        if (ch === ' ') units += 0.33;
+        else if (/[ilI1\|\.,'`]/.test(ch)) units += 0.35;
+        else if (/[mwMW@#%&]/.test(ch)) units += 0.9;
+        else if (/[A-Z]/.test(ch)) units += 0.68;
+        else if (/[0-9]/.test(ch)) units += 0.56;
+        else units += 0.55;
+    }
+    return units;
+}
+
+function estimateWrappedLineCount(text = '') {
+    const plain = stripHtml(text).replace(/\s+/g, ' ').trim();
+    if (!plain) return 1;
+
+    // Empirical wrap-capacity tuning: lower unitWidthMm => more chars per line => fewer lines.
+    const unitWidthMm = FONT_MM * 0.48;
+    const maxUnitsPerLine = Math.max(1, CONTENT_WIDTH_MM / unitWidthMm);
+    const words = plain.split(' ');
+
+    let lines = 1;
+    let currentUnits = 0;
+    for (const word of words) {
+        const wordUnits = estimateTextUnits(word);
+        const withSpace = currentUnits === 0 ? wordUnits : (wordUnits + 0.33);
+
+        if (withSpace > maxUnitsPerLine) {
+            const forcedLines = Math.max(1, Math.ceil(wordUnits / maxUnitsPerLine));
+            lines += forcedLines - (currentUnits === 0 ? 0 : 1);
+            currentUnits = wordUnits % maxUnitsPerLine;
+            continue;
+        }
+
+        if ((currentUnits + withSpace) > maxUnitsPerLine) {
+            lines += 1;
+            currentUnits = wordUnits;
+        } else {
+            currentUnits += withSpace;
+        }
+    }
+
+    return Math.max(1, lines);
+}
 
 function estimateBlockHeightMm(para, metadata) {
     const content = replaceVariables(para.content || '', metadata);
@@ -50,26 +101,24 @@ function estimateBlockHeightMm(para, metadata) {
 
     switch (para.type) {
         case 'date':
-            return 8;
+            return LINE_MM + 7; // margin-bottom 6 + padding-bottom 1
         case 'to':
-            return 12;
+            return (Math.max(1, content.split(/<br\s*\/?>/i).length) * LINE_MM) + 5;
         case 'subject':
-            return 10;
+            return LINE_MM + 9; // margin-top 4 + margin-bottom 4 + padding-bottom 1
         case 'signature':
-            return 28;
+            return (Math.max(1, content.split(/<br\s*\/?>/i).length) * LINE_MM) + 27; // text + image + margins/padding
         case 'company':
-            return 7;
+            return LINE_MM + 10;
         case 'separator':
-            return 7;
+            return LINE_MM + 10;
         case 'footer':
-            return 6;
+            return (estimateWrappedLineCount(content) * LINE_MM) + 5;
         case 'image':
-            return 55;
+            return 75; // 55mm image + 10mm top + 10mm bottom margins
         default: {
-            const approxCharsPerLine = 95;
-            const lines = Math.max(1, Math.ceil(plainText.length / approxCharsPerLine));
-            const listItemBuffer = /^\s*\d+\)/.test(plainText) ? 3 : 2;
-            return (lines * 5) + listItemBuffer;
+            const lines = estimateWrappedLineCount(plainText);
+            return (lines * LINE_MM) + 5; // paragraph-block and p bottom spacing
         }
     }
 }
@@ -110,9 +159,37 @@ function splitParagraphToFit(para, metadata, maxHeightMm) {
     return chunks.length ? chunks : [para];
 }
 
+function splitParagraphIntoFitAndRest(para, metadata, maxHeightMm) {
+    const rawText = replaceVariables(para.content || '', metadata);
+    const words = stripHtml(rawText).split(/\s+/).filter(Boolean);
+    if (words.length < 2) return null;
+
+    let fitWords = [];
+    for (const word of words) {
+        const candidate = [...fitWords, word].join(' ');
+        const h = estimateBlockHeightMm({ ...para, content: candidate }, metadata);
+        if (h <= maxHeightMm || fitWords.length === 0) {
+            fitWords.push(word);
+        } else {
+            break;
+        }
+    }
+
+    if (fitWords.length === 0 || fitWords.length >= words.length) {
+        return null;
+    }
+
+    const restWords = words.slice(fitWords.length);
+    return {
+        fit: { ...para, content: fitWords.join(' ') },
+        rest: { ...para, content: restWords.join(' ') }
+    };
+}
+
 function repaginateForFooterSafety(pages, metadata) {
     const repaginated = [];
     let pageNumber = 1;
+    const MIN_REMAINING_FOR_SPLIT_MM = 4; // Allow tighter packing near the footer
 
     for (const page of pages) {
         let currentParagraphs = [];
@@ -120,23 +197,95 @@ function repaginateForFooterSafety(pages, metadata) {
 
         for (const para of page.paragraphs || []) {
             const pageUsableHeight = CONTENT_MAX_HEIGHT_MM;
-            const blockHeight = estimateBlockHeightMm(para, metadata);
-            const blocks = blockHeight > (pageUsableHeight * 1.15) && para.type === 'paragraph'
-                ? splitParagraphToFit(para, metadata, pageUsableHeight)
-                : [para];
+            const queue = [para];
 
-            for (const block of blocks) {
+            while (queue.length > 0) {
+                const block = queue.shift();
                 const h = estimateBlockHeightMm(block, metadata);
-                const willOverflow = (currentHeight + h) > pageUsableHeight;
+                const PARAGRAPH_EXTRA_BOTTOM_RESERVE_MM = 4; // Push paragraph text slightly up near the footer.
+                const extraReserveForParagraph = block.type === 'paragraph' ? PARAGRAPH_EXTRA_BOTTOM_RESERVE_MM : 0;
+                const effectivePageUsableHeight = pageUsableHeight - extraReserveForParagraph;
+                const remaining = effectivePageUsableHeight - currentHeight;
+                const willOverflow = (currentHeight + h) > effectivePageUsableHeight;
 
-                if (willOverflow && currentParagraphs.length > 0) {
+                if (!willOverflow) {
+                    currentParagraphs.push(block);
+                    currentHeight += h;
+                    continue;
+                }
+
+                const canSplitParagraph = block.type === 'paragraph' && stripHtml(block.content || '').trim().length > 0;
+                if (canSplitParagraph) {
+                    // Only split when there's meaningful remaining space; otherwise push to next page.
+                    const targetFitHeight = remaining >= MIN_REMAINING_FOR_SPLIT_MM ? remaining : null;
+                    const split = targetFitHeight === null
+                        ? null
+                        : splitParagraphIntoFitAndRest(block, metadata, targetFitHeight);
+
+                    if (split && split.fit?.content) {
+                        if (currentParagraphs.length > 0) {
+                            currentParagraphs.push(split.fit);
+                            currentHeight += estimateBlockHeightMm(split.fit, metadata);
+                            repaginated.push({ pageNumber: pageNumber++, paragraphs: currentParagraphs });
+                            currentParagraphs = [];
+                            currentHeight = 0;
+                        } else {
+                            const splitBlocks = splitParagraphToFit(block, metadata, pageUsableHeight * 0.92);
+                            const firstBlock = splitBlocks.shift();
+                            if (firstBlock) {
+                                currentParagraphs.push(firstBlock);
+                                currentHeight += estimateBlockHeightMm(firstBlock, metadata);
+                                repaginated.push({ pageNumber: pageNumber++, paragraphs: currentParagraphs });
+                                currentParagraphs = [];
+                                currentHeight = 0;
+                            }
+                            splitBlocks.reverse().forEach((b) => queue.unshift(b));
+                            continue;
+                        }
+                        queue.unshift(split.rest);
+                        continue;
+                    }
+                }
+
+                // Backfill: if a non-paragraph block forces a page break, try splitting the
+                // last paragraph already placed on this page to use the remaining space.
+                // This avoids under-filled pages (large blank bottom area) before the footer blocks.
+                if (currentParagraphs.length > 0 && block.type !== 'paragraph') {
+                    const lastPlaced = currentParagraphs[currentParagraphs.length - 1];
+                    if (lastPlaced?.type === 'paragraph') {
+                        const lastH = estimateBlockHeightMm(lastPlaced, metadata);
+                        const heightWithoutLast = currentHeight - lastH;
+                        const availableForLastFit = effectivePageUsableHeight - heightWithoutLast;
+
+                        if (availableForLastFit >= MIN_REMAINING_FOR_SPLIT_MM) {
+                            const splitLast = splitParagraphIntoFitAndRest(lastPlaced, metadata, availableForLastFit);
+                            if (splitLast?.fit?.content && splitLast?.rest?.content) {
+                                // Replace last paragraph with its fit portion.
+                                currentParagraphs[currentParagraphs.length - 1] = splitLast.fit;
+                                currentHeight = heightWithoutLast + estimateBlockHeightMm(splitLast.fit, metadata);
+
+                                // Close current page, and push rest + current block to next page queue.
+                                repaginated.push({ pageNumber: pageNumber++, paragraphs: currentParagraphs });
+                                currentParagraphs = [];
+                                currentHeight = 0;
+
+                                queue.unshift(block);
+                                queue.unshift(splitLast.rest);
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                if (currentParagraphs.length > 0) {
                     repaginated.push({ pageNumber: pageNumber++, paragraphs: currentParagraphs });
                     currentParagraphs = [];
                     currentHeight = 0;
+                    queue.unshift(block);
+                } else {
+                    currentParagraphs.push(block);
+                    currentHeight += h;
                 }
-
-                currentParagraphs.push(block);
-                currentHeight += h;
             }
         }
 
@@ -509,6 +658,9 @@ body{
     height:${CONTENT_MAX_HEIGHT_MM}mm;
     max-height:${CONTENT_MAX_HEIGHT_MM}mm;
     overflow:visible;
+    /* Override global border-box so CONTENT_MAX_HEIGHT_MM represents the content-box height.
+       Otherwise padding is double-counted and leaves excessive blank space. */
+    box-sizing:content-box;
 }
 
 p{

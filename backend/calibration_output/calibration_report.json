@@ -1,0 +1,491 @@
+{
+  "generated_at": "2026-05-08T06:49:45.473801Z",
+  "cases": [
+    {
+      "case_id": 1,
+      "pdf_file": "backend/GeneratedOfferLetter/full time_Letter_CANDIDATE 1_1778222986611.pdf",
+      "estimated_mm_old_algorithm": 367,
+      "estimated_percent_of_usable_content_old": 153.56,
+      "page_measurements": [
+        {
+          "page_number": 1,
+          "used_mm_on_page": 260.36,
+          "used_percent_of_page": 87.66,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_01_page_01.png"
+        },
+        {
+          "page_number": 2,
+          "used_mm_on_page": 218.57,
+          "used_percent_of_page": 73.59,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_01_page_02.png"
+        }
+      ],
+      "input_block_types": [
+        "date",
+        "to",
+        "subject",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "image",
+        "paragraph",
+        "signature",
+        "company",
+        "separator",
+        "footer",
+        "footer",
+        "footer",
+        "footer"
+      ]
+    },
+    {
+      "case_id": 2,
+      "pdf_file": "backend/GeneratedOfferLetter/full time_Letter_CANDIDATE 2_1778222989404.pdf",
+      "estimated_mm_old_algorithm": 372,
+      "estimated_percent_of_usable_content_old": 155.65,
+      "page_measurements": [
+        {
+          "page_number": 1,
+          "used_mm_on_page": 283.5,
+          "used_percent_of_page": 95.45,
+          "footer_collision": true,
+          "screenshot": "screenshots/case_02_page_01.png"
+        },
+        {
+          "page_number": 2,
+          "used_mm_on_page": 235.93,
+          "used_percent_of_page": 79.44,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_02_page_02.png"
+        }
+      ],
+      "input_block_types": [
+        "date",
+        "to",
+        "subject",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "image",
+        "paragraph",
+        "signature",
+        "company",
+        "separator",
+        "footer",
+        "footer",
+        "footer",
+        "footer"
+      ]
+    },
+    {
+      "case_id": 3,
+      "pdf_file": "backend/GeneratedOfferLetter/part time_Letter_CANDIDATE 3_1778222992021.pdf",
+      "estimated_mm_old_algorithm": 377,
+      "estimated_percent_of_usable_content_old": 157.74,
+      "page_measurements": [
+        {
+          "page_number": 1,
+          "used_mm_on_page": 230.79,
+          "used_percent_of_page": 77.71,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_03_page_01.png"
+        },
+        {
+          "page_number": 2,
+          "used_mm_on_page": 235.93,
+          "used_percent_of_page": 79.44,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_03_page_02.png"
+        }
+      ],
+      "input_block_types": [
+        "date",
+        "to",
+        "subject",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "image",
+        "paragraph",
+        "signature",
+        "company",
+        "separator",
+        "footer",
+        "footer",
+        "footer",
+        "footer"
+      ]
+    },
+    {
+      "case_id": 4,
+      "pdf_file": "backend/GeneratedOfferLetter/internship_Letter_CANDIDATE 4_1778222994647.pdf",
+      "estimated_mm_old_algorithm": 387,
+      "estimated_percent_of_usable_content_old": 161.92,
+      "page_measurements": [
+        {
+          "page_number": 1,
+          "used_mm_on_page": 160.71,
+          "used_percent_of_page": 54.11,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_04_page_01.png"
+        },
+        {
+          "page_number": 2,
+          "used_mm_on_page": 224.36,
+          "used_percent_of_page": 75.54,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_04_page_02.png"
+        }
+      ],
+      "input_block_types": [
+        "date",
+        "to",
+        "subject",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "image",
+        "paragraph",
+        "signature",
+        "company",
+        "separator",
+        "footer",
+        "footer",
+        "footer",
+        "footer"
+      ]
+    },
+    {
+      "case_id": 5,
+      "pdf_file": "backend/GeneratedOfferLetter/part time_Letter_CANDIDATE 5_1778222997255.pdf",
+      "estimated_mm_old_algorithm": 412,
+      "estimated_percent_of_usable_content_old": 172.38,
+      "page_measurements": [
+        {
+          "page_number": 1,
+          "used_mm_on_page": 154.93,
+          "used_percent_of_page": 52.16,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_05_page_01.png"
+        },
+        {
+          "page_number": 2,
+          "used_mm_on_page": 235.93,
+          "used_percent_of_page": 79.44,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_05_page_02.png"
+        }
+      ],
+      "input_block_types": [
+        "date",
+        "to",
+        "subject",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "image",
+        "paragraph",
+        "signature",
+        "company",
+        "separator",
+        "footer",
+        "footer",
+        "footer",
+        "footer"
+      ]
+    },
+    {
+      "case_id": 6,
+      "pdf_file": "backend/GeneratedOfferLetter/part time_Letter_CANDIDATE 6_1778222999897.pdf",
+      "estimated_mm_old_algorithm": 372,
+      "estimated_percent_of_usable_content_old": 155.65,
+      "page_measurements": [
+        {
+          "page_number": 1,
+          "used_mm_on_page": 271.93,
+          "used_percent_of_page": 91.56,
+          "footer_collision": true,
+          "screenshot": "screenshots/case_06_page_01.png"
+        },
+        {
+          "page_number": 2,
+          "used_mm_on_page": 230.14,
+          "used_percent_of_page": 77.49,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_06_page_02.png"
+        }
+      ],
+      "input_block_types": [
+        "date",
+        "to",
+        "subject",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "image",
+        "paragraph",
+        "signature",
+        "company",
+        "separator",
+        "footer",
+        "footer",
+        "footer",
+        "footer"
+      ]
+    },
+    {
+      "case_id": 7,
+      "pdf_file": "backend/GeneratedOfferLetter/part time_Letter_CANDIDATE 7_1778223002464.pdf",
+      "estimated_mm_old_algorithm": 362,
+      "estimated_percent_of_usable_content_old": 151.46,
+      "page_measurements": [
+        {
+          "page_number": 1,
+          "used_mm_on_page": 283.5,
+          "used_percent_of_page": 95.45,
+          "footer_collision": true,
+          "screenshot": "screenshots/case_07_page_01.png"
+        },
+        {
+          "page_number": 2,
+          "used_mm_on_page": 218.57,
+          "used_percent_of_page": 73.59,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_07_page_02.png"
+        }
+      ],
+      "input_block_types": [
+        "date",
+        "to",
+        "subject",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "image",
+        "paragraph",
+        "signature",
+        "company",
+        "separator",
+        "footer",
+        "footer",
+        "footer",
+        "footer"
+      ]
+    },
+    {
+      "case_id": 8,
+      "pdf_file": "backend/GeneratedOfferLetter/full time_Letter_CANDIDATE 8_1778223005369.pdf",
+      "estimated_mm_old_algorithm": 387,
+      "estimated_percent_of_usable_content_old": 161.92,
+      "page_measurements": [
+        {
+          "page_number": 1,
+          "used_mm_on_page": 178.07,
+          "used_percent_of_page": 59.96,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_08_page_01.png"
+        },
+        {
+          "page_number": 2,
+          "used_mm_on_page": 224.36,
+          "used_percent_of_page": 75.54,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_08_page_02.png"
+        }
+      ],
+      "input_block_types": [
+        "date",
+        "to",
+        "subject",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "image",
+        "paragraph",
+        "signature",
+        "company",
+        "separator",
+        "footer",
+        "footer",
+        "footer",
+        "footer"
+      ]
+    },
+    {
+      "case_id": 9,
+      "pdf_file": "backend/GeneratedOfferLetter/internship_Letter_CANDIDATE 9_1778223008125.pdf",
+      "estimated_mm_old_algorithm": 332,
+      "estimated_percent_of_usable_content_old": 138.91,
+      "page_measurements": [
+        {
+          "page_number": 1,
+          "used_mm_on_page": 236.57,
+          "used_percent_of_page": 79.65,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_09_page_01.png"
+        },
+        {
+          "page_number": 2,
+          "used_mm_on_page": 235.93,
+          "used_percent_of_page": 79.44,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_09_page_02.png"
+        }
+      ],
+      "input_block_types": [
+        "date",
+        "to",
+        "subject",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "image",
+        "paragraph",
+        "signature",
+        "company",
+        "separator",
+        "footer",
+        "footer",
+        "footer",
+        "footer"
+      ]
+    },
+    {
+      "case_id": 10,
+      "pdf_file": "backend/GeneratedOfferLetter/full time_Letter_CANDIDATE 10_1778223010858.pdf",
+      "estimated_mm_old_algorithm": 407,
+      "estimated_percent_of_usable_content_old": 170.29,
+      "page_measurements": [
+        {
+          "page_number": 1,
+          "used_mm_on_page": 154.93,
+          "used_percent_of_page": 52.16,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_10_page_01.png"
+        },
+        {
+          "page_number": 2,
+          "used_mm_on_page": 230.14,
+          "used_percent_of_page": 77.49,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_10_page_02.png"
+        }
+      ],
+      "input_block_types": [
+        "date",
+        "to",
+        "subject",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "image",
+        "paragraph",
+        "signature",
+        "company",
+        "separator",
+        "footer",
+        "footer",
+        "footer",
+        "footer"
+      ]
+    },
+    {
+      "case_id": 11,
+      "pdf_file": "backend/GeneratedOfferLetter/internship_Letter_CANDIDATE 11_1778223013564.pdf",
+      "estimated_mm_old_algorithm": 337,
+      "estimated_percent_of_usable_content_old": 141.0,
+      "page_measurements": [
+        {
+          "page_number": 1,
+          "used_mm_on_page": 260.36,
+          "used_percent_of_page": 87.66,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_11_page_01.png"
+        },
+        {
+          "page_number": 2,
+          "used_mm_on_page": 224.36,
+          "used_percent_of_page": 75.54,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_11_page_02.png"
+        }
+      ],
+      "input_block_types": [
+        "date",
+        "to",
+        "subject",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "image",
+        "paragraph",
+        "signature",
+        "company",
+        "separator",
+        "footer",
+        "footer",
+        "footer",
+        "footer"
+      ]
+    },
+    {
+      "case_id": 12,
+      "pdf_file": "backend/GeneratedOfferLetter/full time_Letter_CANDIDATE 12_1778223016465.pdf",
+      "estimated_mm_old_algorithm": 332,
+      "estimated_percent_of_usable_content_old": 138.91,
+      "page_measurements": [
+        {
+          "page_number": 1,
+          "used_mm_on_page": 230.79,
+          "used_percent_of_page": 77.71,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_12_page_01.png"
+        },
+        {
+          "page_number": 2,
+          "used_mm_on_page": 230.14,
+          "used_percent_of_page": 77.49,
+          "footer_collision": false,
+          "screenshot": "screenshots/case_12_page_02.png"
+        }
+      ],
+      "input_block_types": [
+        "date",
+        "to",
+        "subject",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "image",
+        "paragraph",
+        "signature",
+        "company",
+        "separator",
+        "footer",
+        "footer",
+        "footer",
+        "footer"
+      ]
+    }
+  ],
+  "summary": {
+    "total_cases": 12,
+    "total_pages": 24,
+    "pages_with_footer_collision": 3,
+    "collision_rate_percent": 12.5
+  }
+}

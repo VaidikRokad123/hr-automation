@@ -18,53 +18,147 @@ function AdvancedEditor() {
   const fileInputRef = useRef(null);
   const textareaRefs = useRef({});
   const lastFocusedTextarea = useRef(null);
+  const measurementRootRef = useRef(null);
 
-  // Realistic page capacity accounting for header/footer and spacing
-  const REALISTIC_CONTENT_HEIGHT_MM = 230; // Adjusted to 230mm for optimal page capacity
-  
-  // Signature image dimensions
-  const SIGNATURE_IMAGE_HEIGHT_MM = 18; // Approximate height for 40mm wide signature
-  
-  // Height estimates including margins/padding (in mm)
-  const HEIGHT_ESTIMATES = {
-    date: 8 + 7,           // content + margin-bottom + padding
-    to: 12 + 5,            // content + margin-bottom + padding
-    subject: 10 + 9,       // content + margin-top + margin-bottom + padding
-    signature: 28 + SIGNATURE_IMAGE_HEIGHT_MM + 12,  // text + image + margin-top + margin-bottom + padding
-    company: 7 + 10,       // content + margin-top + margin-bottom + padding
-    separator: 7 + 10,     // content + margin-top + margin-bottom + padding
-    footer: 6 + 5,         // content + spacing
-    image: 55 + 5,         // content + spacing
-    paragraph: null        // calculated dynamically
+  // Keep editor fullness aligned with template layout and footer safety.
+  const PAGE_HEIGHT_MM = 297;
+  const TOP_PADDING_MM = 30;
+  const BOTTOM_SAFE_MM = 28;
+  const REALISTIC_CONTENT_HEIGHT_MM = PAGE_HEIGHT_MM - TOP_PADDING_MM - BOTTOM_SAFE_MM;
+  const PX_PER_MM = 96 / 25.4;
+
+  const stripHtml = (text = '') => String(text).replace(/<[^>]*>/g, '');
+
+  const measureParagraphsHeightMm = (paragraphs = []) => {
+    const root = measurementRootRef.current;
+    if (!root || typeof window === 'undefined') {
+      return paragraphs.reduce((total, para) => total + fallbackEstimateHeightMm(para), 0);
+    }
+
+    root.innerHTML = '';
+    const pageEl = document.createElement('div');
+    pageEl.style.width = '210mm';
+    pageEl.style.minHeight = '297mm';
+    pageEl.style.position = 'relative';
+    pageEl.style.fontFamily = 'Arial, sans-serif';
+    pageEl.style.fontSize = '11pt';
+    pageEl.style.lineHeight = '1.5';
+    pageEl.style.color = '#000';
+
+    const contentEl = document.createElement('div');
+    contentEl.style.padding = '30mm 25mm 30mm 25mm';
+    contentEl.style.position = 'relative';
+    contentEl.style.height = `${REALISTIC_CONTENT_HEIGHT_MM}mm`;
+    contentEl.style.boxSizing = 'content-box';
+    contentEl.style.overflow = 'visible';
+    pageEl.appendChild(contentEl);
+    root.appendChild(pageEl);
+
+    paragraphs.forEach((para) => {
+      if (!para || !String(para.content || '').trim()) return;
+
+      let el = document.createElement('div');
+      const paraType = para.type || 'paragraph';
+      const safeText = stripHtml(para.content);
+
+      if (paraType === 'date') {
+        el.textContent = safeText;
+        el.style.marginLeft = '125mm';
+        el.style.marginBottom = '6mm';
+        el.style.paddingBottom = '1mm';
+      } else if (paraType === 'to') {
+        el.innerHTML = para.content;
+        el.style.lineHeight = '1.5';
+        el.style.marginBottom = '4mm';
+        el.style.paddingBottom = '1mm';
+      } else if (paraType === 'subject') {
+        el.textContent = safeText;
+        el.style.textAlign = 'center';
+        el.style.fontWeight = '700';
+        el.style.marginTop = '4mm';
+        el.style.marginBottom = '4mm';
+        el.style.paddingBottom = '1mm';
+      } else if (paraType === 'signature') {
+        el.style.marginTop = '6mm';
+        el.style.marginBottom = '4mm';
+        el.style.paddingBottom = '2mm';
+        const textEl = document.createElement('div');
+        textEl.innerHTML = para.content;
+        textEl.style.marginBottom = '1mm';
+        const signEl = document.createElement('div');
+        signEl.style.width = '40mm';
+        signEl.style.height = '18mm';
+        signEl.style.marginTop = '2mm';
+        signEl.style.background = 'transparent';
+        el.appendChild(textEl);
+        el.appendChild(signEl);
+      } else if (paraType === 'company') {
+        el.textContent = safeText;
+        el.style.marginTop = '4mm';
+        el.style.marginBottom = '4mm';
+        el.style.paddingBottom = '2mm';
+      } else if (paraType === 'separator') {
+        el.textContent = safeText;
+        el.style.textAlign = 'center';
+        el.style.marginTop = '4mm';
+        el.style.marginBottom = '4mm';
+        el.style.paddingBottom = '2mm';
+      } else if (paraType === 'image') {
+        const imageEl = document.createElement('img');
+        imageEl.src = para.content;
+        imageEl.style.maxWidth = '100%';
+        imageEl.style.width = '100%';
+        imageEl.style.height = '55mm';
+        imageEl.style.objectFit = 'contain';
+        imageEl.style.display = 'block';
+        el.style.margin = '10mm 0';
+        el.appendChild(imageEl);
+      } else {
+        el.style.marginBottom = '4mm';
+        el.style.paddingBottom = '1mm';
+        const p = document.createElement('p');
+        p.textContent = safeText;
+        p.style.margin = '0';
+        p.style.marginBottom = '1mm';
+        p.style.lineHeight = '1.5';
+        p.style.textAlign = 'justify';
+        el.appendChild(p);
+      }
+
+      contentEl.appendChild(el);
+    });
+
+    const contentRect = contentEl.getBoundingClientRect();
+    // Measure from the top of the *content box* (excluding padding-top),
+    // so this matches the backend's CONTENT_MAX_HEIGHT_MM semantics.
+    const contentAreaTop = contentRect.top + (TOP_PADDING_MM * PX_PER_MM);
+    let maxBottom = contentAreaTop;
+    Array.from(contentEl.children).forEach((child) => {
+      const rect = child.getBoundingClientRect();
+      maxBottom = Math.max(maxBottom, rect.bottom);
+    });
+
+    const usedPx = Math.max(0, maxBottom - contentAreaTop);
+    return usedPx / PX_PER_MM;
   };
 
-  // Estimate content height in millimeters (matching backend logic + spacing)
-  const estimateContentHeight = (paragraph) => {
-    const content = (paragraph.content || '').replace(/<[^>]*>/g, ''); // Strip HTML
-    const plainText = content.trim();
-    
-    // Get fixed height for non-paragraph types (includes spacing)
-    if (paragraph.type !== 'paragraph' && HEIGHT_ESTIMATES[paragraph.type]) {
-      return HEIGHT_ESTIMATES[paragraph.type];
-    }
-    
-    // Calculate paragraph height based on text length
-    const approxCharsPerLine = 95;
-    const lines = Math.max(1, Math.ceil(plainText.length / approxCharsPerLine));
-    const listItemBuffer = /^\s*\d+\)/.test(plainText) ? 3 : 2;
-    const contentHeight = (lines * 5) + listItemBuffer;
-    
-    // Add paragraph spacing (margin-bottom: 4mm + padding-bottom: 1mm)
-    const paragraphSpacing = 5;
-    
-    return contentHeight + paragraphSpacing;
+  const fallbackEstimateHeightMm = (paragraph) => {
+    const content = stripHtml(paragraph.content || '').trim();
+    if (paragraph.type === 'date') return 9;
+    if (paragraph.type === 'to') return 14;
+    if (paragraph.type === 'subject') return 12;
+    if (paragraph.type === 'signature') return 50;
+    if (paragraph.type === 'company') return 13;
+    if (paragraph.type === 'separator') return 13;
+    if (paragraph.type === 'footer') return 10;
+    if (paragraph.type === 'image') return 65;
+    const lines = Math.max(1, Math.ceil(content.length / 78));
+    return (lines * 6.2) + 5;
   };
 
   // Calculate total page height
   const calculatePageHeight = (paragraphs) => {
-    return paragraphs.reduce((total, para) => {
-      return total + estimateContentHeight(para);
-    }, 0);
+    return measureParagraphsHeightMm(paragraphs);
   };
 
   // Auto-paginate when content changes
@@ -78,7 +172,7 @@ function AdvancedEditor() {
     const allParagraphs = updatedPages.flatMap(page => page.paragraphs);
 
     for (const para of allParagraphs) {
-      const paraHeight = estimateContentHeight(para);
+      const paraHeight = calculatePageHeight([para]);
       
       // Check if adding this paragraph would exceed capacity
       if (currentHeight + paraHeight > REALISTIC_CONTENT_HEIGHT_MM && currentPageParagraphs.length > 0) {
@@ -768,6 +862,16 @@ function AdvancedEditor() {
           )}
         </div>
       </div>
+      <div
+        ref={measurementRootRef}
+        style={{
+          position: 'fixed',
+          left: '-100000px',
+          top: '-100000px',
+          visibility: 'hidden',
+          pointerEvents: 'none'
+        }}
+      />
     </div>
   );
 }
