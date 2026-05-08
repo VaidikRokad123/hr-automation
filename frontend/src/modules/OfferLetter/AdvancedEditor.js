@@ -198,6 +198,46 @@ function AdvancedEditor() {
   };
 
   const updateParagraph = (paragraphIndex, value) => {
+    // Check if the value contains newlines (multiple paragraphs)
+    const hasNewlines = value.includes('\n\n') || value.includes('\r\n\r\n');
+    
+    if (hasNewlines) {
+      // Split by double newlines to separate paragraphs
+      const splitParagraphs = value
+        .split(/\n\n+|\r\n\r\n+/)
+        .map(text => text.trim())
+        .filter(text => text.length > 0);
+      
+      if (splitParagraphs.length > 1) {
+        // User pasted multiple paragraphs - split them
+        const updatedPages = [...pages];
+        const currentPara = updatedPages[currentPageIndex].paragraphs[paragraphIndex];
+        
+        // Replace current paragraph with first split
+        updatedPages[currentPageIndex].paragraphs[paragraphIndex] = {
+          ...currentPara,
+          content: splitParagraphs[0]
+        };
+        
+        // Insert remaining splits as new paragraphs after current one
+        for (let i = 1; i < splitParagraphs.length; i++) {
+          const newPara = {
+            id: `p${Date.now()}_${i}`,
+            content: splitParagraphs[i],
+            type: currentPara.type || 'paragraph'
+          };
+          updatedPages[currentPageIndex].paragraphs.splice(paragraphIndex + i, 0, newPara);
+        }
+        
+        setPages(updatedPages);
+        setNotificationMessage(`Split into ${splitParagraphs.length} paragraphs`);
+        setShowNotification(true);
+        setTimeout(() => setShowNotification(false), 2000);
+        return;
+      }
+    }
+    
+    // Normal update without splitting
     const updatedPages = [...pages];
     updatedPages[currentPageIndex].paragraphs[paragraphIndex].content = value;
     
@@ -241,6 +281,48 @@ function AdvancedEditor() {
     setPages(updatedPages);
     
     setNotificationMessage('Paragraph deleted');
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 2000);
+  };
+
+  // Split a long paragraph by newlines
+  const splitParagraph = (paragraphIndex) => {
+    const currentPara = pages[currentPageIndex].paragraphs[paragraphIndex];
+    const content = currentPara.content || '';
+    
+    // Split by single or double newlines
+    const splitParagraphs = content
+      .split(/\n+/)
+      .map(text => text.trim())
+      .filter(text => text.length > 0);
+    
+    if (splitParagraphs.length <= 1) {
+      setNotificationMessage('No newlines found to split');
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 2000);
+      return;
+    }
+    
+    const updatedPages = [...pages];
+    
+    // Replace current paragraph with first split
+    updatedPages[currentPageIndex].paragraphs[paragraphIndex] = {
+      ...currentPara,
+      content: splitParagraphs[0]
+    };
+    
+    // Insert remaining splits as new paragraphs after current one
+    for (let i = 1; i < splitParagraphs.length; i++) {
+      const newPara = {
+        id: `p${Date.now()}_${i}`,
+        content: splitParagraphs[i],
+        type: currentPara.type || 'paragraph'
+      };
+      updatedPages[currentPageIndex].paragraphs.splice(paragraphIndex + i, 0, newPara);
+    }
+    
+    setPages(updatedPages);
+    setNotificationMessage(`Split into ${splitParagraphs.length} paragraphs`);
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 2000);
   };
@@ -625,6 +707,15 @@ function AdvancedEditor() {
                     >
                       ↓
                     </button>
+                    {para.type !== 'image' && (
+                      <button
+                        onClick={() => splitParagraph(index)}
+                        className="split-btn"
+                        title="Split by newlines"
+                      >
+                        ✂️
+                      </button>
+                    )}
                     <button
                       onClick={() => para.type === 'image' ? deleteImage(index) : deleteParagraph(index)}
                       className="delete-btn"
