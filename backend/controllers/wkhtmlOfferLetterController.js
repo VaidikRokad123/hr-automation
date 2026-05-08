@@ -40,7 +40,7 @@ function stripHtml(text = '') {
 
 const TOP_PADDING_MM = 30;
 const SIDE_PADDING_MM = 25;
-const BOTTOM_SAFE_MM = 34;
+const BOTTOM_SAFE_MM = 30;
 const PAGE_HEIGHT_MM = 297;
 const CONTENT_MAX_HEIGHT_MM = PAGE_HEIGHT_MM - TOP_PADDING_MM - BOTTOM_SAFE_MM;
 
@@ -50,24 +50,26 @@ function estimateBlockHeightMm(para, metadata) {
 
     switch (para.type) {
         case 'date':
-            return 10;
+            return 8;
         case 'to':
-            return 13;
+            return 12;
         case 'subject':
             return 10;
         case 'signature':
-            return 30;
+            return 28;
         case 'company':
-            return 8;
+            return 7;
         case 'separator':
-            return 8;
+            return 7;
+        case 'footer':
+            return 6;
         case 'image':
             return 55;
         default: {
-            const approxCharsPerLine = 90;
+            const approxCharsPerLine = 95;
             const lines = Math.max(1, Math.ceil(plainText.length / approxCharsPerLine));
-            const listItemBuffer = /^\s*\d+\)/.test(plainText) ? 4 : 3;
-            return (lines * 5.4) + listItemBuffer;
+            const listItemBuffer = /^\s*\d+\)/.test(plainText) ? 3 : 2;
+            return (lines * 5) + listItemBuffer;
         }
     }
 }
@@ -281,6 +283,11 @@ export const generateOfferLetter = async (req, res) => {
         // Generate PDF
         const pdfUrl = await generatePDFFromData(structuredData);
 
+        console.log('Generated PDF with pages:', structuredData.pages.length);
+        structuredData.pages.forEach((page, idx) => {
+            console.log(`Page ${page.pageNumber}: ${page.paragraphs.length} paragraphs`);
+        });
+
         res.status(200).json({
             message: `Offer letter generated successfully`,
             path: pdfUrl,
@@ -365,6 +372,15 @@ async function generatePDFFromData(data) {
         let htmlContent = '';
         const safePages = repaginateForFooterSafety(data.pages || [], data.metadata || {});
 
+        console.log('After repagination:', safePages.length, 'pages');
+        safePages.forEach((page, idx) => {
+            console.log(`  Page ${page.pageNumber}: ${page.paragraphs.length} paragraphs`);
+            page.paragraphs.forEach((p, i) => {
+                const preview = (p.content || '').substring(0, 40).replace(/\n/g, ' ');
+                console.log(`    ${i+1}. [${p.type}] ${preview}...`);
+            });
+        });
+
         safePages.forEach((page, pageIndex) => {
             htmlContent += `<section class="pdf-page ${pageIndex > 0 ? 'next-page' : ''}">`;
             htmlContent += `<div class="page-content">`;
@@ -444,11 +460,15 @@ body{
 /* Independent fixed-size page container to prevent split/cut backgrounds. */
 .pdf-page{
     width:210mm;
+    height:297mm;
     min-height:297mm;
+    max-height:297mm;
     position:relative;
     overflow:hidden;
     page-break-inside:avoid;
+    page-break-after:auto;
     break-inside:avoid-page;
+    break-after:auto;
     background-image:url('${templateUrl}');
     background-position:center top;
     background-repeat:no-repeat;
@@ -460,6 +480,11 @@ body{
 .next-page{
     page-break-before:always;
     break-before:page;
+}
+
+.pdf-page:last-child{
+    page-break-after:avoid;
+    break-after:avoid;
 }
 
 .pdf-page::after{
@@ -481,7 +506,8 @@ body{
     z-index:1;
     font-size:11pt;
     line-height:1.5;
-    min-height:${CONTENT_MAX_HEIGHT_MM}mm;
+    height:${CONTENT_MAX_HEIGHT_MM}mm;
+    max-height:${CONTENT_MAX_HEIGHT_MM}mm;
     overflow:visible;
 }
 
@@ -495,8 +521,8 @@ p{
 }
 
 .paragraph-block{
-    margin-bottom:5mm;
-    padding-bottom: 2mm;
+    margin-bottom:4mm;
+    padding-bottom: 1mm;
     page-break-inside: avoid;
     break-inside: avoid;
 }
@@ -506,7 +532,7 @@ p{
     word-spacing: 0;
     letter-spacing: 0;
     white-space: normal;
-    margin-bottom: 2mm;
+    margin-bottom: 1mm;
 }
 
 .avoid-break{
@@ -517,53 +543,53 @@ p{
 .date{
     text-align:left;
     margin-left:125mm;
-    margin-bottom:8mm;
-    padding-bottom: 2mm;
+    margin-bottom:6mm;
+    padding-bottom: 1mm;
 }
 
 .subject{
     text-align:center;
     font-weight:700;
-    margin-top:5mm;
-    margin-bottom:5mm;
-    padding-bottom: 2mm;
+    margin-top:4mm;
+    margin-bottom:4mm;
+    padding-bottom: 1mm;
 }
 
 .to-line{
     line-height:1.5;
-    margin-bottom:5mm;
-    padding-bottom: 2mm;
+    margin-bottom:4mm;
+    padding-bottom: 1mm;
 }
 
 .signature-block{
-    margin-top:8mm;
+    margin-top:6mm;
     line-height:1.5;
-    margin-bottom: 5mm;
-    padding-bottom: 3mm;
+    margin-bottom: 4mm;
+    padding-bottom: 2mm;
     page-break-inside: avoid;
     break-inside: avoid;
     display: block;
 }
 
 .signature-block div{
-    margin-bottom: 2mm;
+    margin-bottom: 1mm;
 }
 
 .signature-block img{
     display: block;
-    margin-top: 3mm;
+    margin-top: 2mm;
 }
 
 .company-name{
-    margin-top:5mm;
-    margin-bottom: 5mm;
-    padding-bottom: 3mm;
+    margin-top:4mm;
+    margin-bottom: 4mm;
+    padding-bottom: 2mm;
 }
 
 .separator{
-    margin-top:5mm;
-    margin-bottom:5mm;
-    padding-bottom: 3mm;
+    margin-top:4mm;
+    margin-bottom:4mm;
+    padding-bottom: 2mm;
 }
 
 .sign{

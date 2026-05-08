@@ -17,6 +17,7 @@ function AdvancedEditor() {
   const [notificationMessage, setNotificationMessage] = useState('');
   const fileInputRef = useRef(null);
   const textareaRefs = useRef({});
+  const lastFocusedTextarea = useRef(null);
 
   // Fetch data from backend on component mount
   useEffect(() => {
@@ -270,6 +271,26 @@ function AdvancedEditor() {
     setTimeout(() => setShowNotification(false), 1500);
   };
 
+  // Handle variable button click
+  const handleVariableClick = (variable) => {
+    if (lastFocusedTextarea.current) {
+      const key = lastFocusedTextarea.current;
+      const [pageIdx, paraIdx] = key.split('-').map(Number);
+      
+      if (pageIdx === currentPageIndex) {
+        insertAtCursor(paraIdx, variable.value);
+      } else {
+        setNotificationMessage('Please select a text field on the current page');
+        setShowNotification(true);
+        setTimeout(() => setShowNotification(false), 2000);
+      }
+    } else {
+      setNotificationMessage('Please click in a text field first');
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 2000);
+    }
+  };
+
   // Predefined data variables
   const predefinedVariables = [
     { label: 'Name', value: '${name}' },
@@ -380,30 +401,13 @@ function AdvancedEditor() {
 
           <div className="sidebar-section">
             <h3>Predefined Data</h3>
-            <p className="helper-text">Click to insert at cursor</p>
+            <p className="helper-text">Click in a text field, then click a variable to insert</p>
             <div className="variables-list">
               {predefinedVariables.map((variable, idx) => (
                 <button
                   key={idx}
                   className="variable-btn"
-                  onClick={() => {
-                    // Find the currently focused textarea
-                    const focusedKey = Object.keys(textareaRefs.current).find(key => {
-                      const textarea = textareaRefs.current[key];
-                      return textarea && document.activeElement === textarea;
-                    });
-                    
-                    if (focusedKey) {
-                      const [pageIdx, paraIdx] = focusedKey.split('-').map(Number);
-                      if (pageIdx === currentPageIndex) {
-                        insertAtCursor(paraIdx, variable.value);
-                      }
-                    } else {
-                      setNotificationMessage('Please click in a text field first');
-                      setShowNotification(true);
-                      setTimeout(() => setShowNotification(false), 2000);
-                    }
-                  }}
+                  onClick={() => handleVariableClick(variable)}
                   title={`Insert ${variable.value}`}
                 >
                   {variable.label}
@@ -480,6 +484,7 @@ function AdvancedEditor() {
                     ref={(el) => textareaRefs.current[`${currentPageIndex}-${index}`] = el}
                     value={para.content}
                     onChange={(e) => updateParagraph(index, e.target.value)}
+                    onFocus={() => lastFocusedTextarea.current = `${currentPageIndex}-${index}`}
                     placeholder="Enter text content..."
                     rows="4"
                   />
