@@ -19,6 +19,101 @@ function AdvancedEditor() {
   const textareaRefs = useRef({});
   const lastFocusedTextarea = useRef(null);
 
+  // Realistic page capacity accounting for header/footer and spacing
+  const REALISTIC_CONTENT_HEIGHT_MM = 230; // Adjusted to 230mm for optimal page capacity
+  
+  // Signature image dimensions
+  const SIGNATURE_IMAGE_HEIGHT_MM = 18; // Approximate height for 40mm wide signature
+  
+  // Height estimates including margins/padding (in mm)
+  const HEIGHT_ESTIMATES = {
+    date: 8 + 7,           // content + margin-bottom + padding
+    to: 12 + 5,            // content + margin-bottom + padding
+    subject: 10 + 9,       // content + margin-top + margin-bottom + padding
+    signature: 28 + SIGNATURE_IMAGE_HEIGHT_MM + 12,  // text + image + margin-top + margin-bottom + padding
+    company: 7 + 10,       // content + margin-top + margin-bottom + padding
+    separator: 7 + 10,     // content + margin-top + margin-bottom + padding
+    footer: 6 + 5,         // content + spacing
+    image: 55 + 5,         // content + spacing
+    paragraph: null        // calculated dynamically
+  };
+
+  // Estimate content height in millimeters (matching backend logic + spacing)
+  const estimateContentHeight = (paragraph) => {
+    const content = (paragraph.content || '').replace(/<[^>]*>/g, ''); // Strip HTML
+    const plainText = content.trim();
+    
+    // Get fixed height for non-paragraph types (includes spacing)
+    if (paragraph.type !== 'paragraph' && HEIGHT_ESTIMATES[paragraph.type]) {
+      return HEIGHT_ESTIMATES[paragraph.type];
+    }
+    
+    // Calculate paragraph height based on text length
+    const approxCharsPerLine = 95;
+    const lines = Math.max(1, Math.ceil(plainText.length / approxCharsPerLine));
+    const listItemBuffer = /^\s*\d+\)/.test(plainText) ? 3 : 2;
+    const contentHeight = (lines * 5) + listItemBuffer;
+    
+    // Add paragraph spacing (margin-bottom: 4mm + padding-bottom: 1mm)
+    const paragraphSpacing = 5;
+    
+    return contentHeight + paragraphSpacing;
+  };
+
+  // Calculate total page height
+  const calculatePageHeight = (paragraphs) => {
+    return paragraphs.reduce((total, para) => {
+      return total + estimateContentHeight(para);
+    }, 0);
+  };
+
+  // Auto-paginate when content changes
+  const autoRebalancePages = (updatedPages) => {
+    const rebalanced = [];
+    let currentPageParagraphs = [];
+    let currentHeight = 0;
+    let pageNumber = 1;
+
+    // Flatten all paragraphs
+    const allParagraphs = updatedPages.flatMap(page => page.paragraphs);
+
+    for (const para of allParagraphs) {
+      const paraHeight = estimateContentHeight(para);
+      
+      // Check if adding this paragraph would exceed capacity
+      if (currentHeight + paraHeight > REALISTIC_CONTENT_HEIGHT_MM && currentPageParagraphs.length > 0) {
+        // Save current page and start new one
+        rebalanced.push({
+          pageNumber: pageNumber++,
+          paragraphs: [...currentPageParagraphs]
+        });
+        currentPageParagraphs = [];
+        currentHeight = 0;
+      }
+
+      currentPageParagraphs.push(para);
+      currentHeight += paraHeight;
+    }
+
+    // Add remaining paragraphs
+    if (currentPageParagraphs.length > 0) {
+      rebalanced.push({
+        pageNumber: pageNumber,
+        paragraphs: currentPageParagraphs
+      });
+    }
+
+    // Ensure at least one page exists
+    if (rebalanced.length === 0) {
+      rebalanced.push({
+        pageNumber: 1,
+        paragraphs: [{ id: `p${Date.now()}`, content: '', type: 'paragraph' }]
+      });
+    }
+
+    return rebalanced;
+  };
+
   // Fetch data from backend on component mount
   useEffect(() => {
     fetchOfferLetterData();
@@ -105,7 +200,26 @@ function AdvancedEditor() {
   const updateParagraph = (paragraphIndex, value) => {
     const updatedPages = [...pages];
     updatedPages[currentPageIndex].paragraphs[paragraphIndex].content = value;
-    setPages(updatedPages);
+    
+    // Check if current page is overflowing
+    const currentPageHeight = calculatePageHeight(updatedPages[currentPageIndex].paragraphs);
+    
+    if (currentPageHeight > REALISTIC_CONTENT_HEIGHT_MM * 1.1) {
+      // Trigger auto-rebalancing (10% overflow tolerance)
+      const rebalanced = autoRebalancePages(updatedPages);
+      setPages(rebalanced);
+      
+      // Try to keep user on the same page or adjust
+      if (currentPageIndex >= rebalanced.length) {
+        setCurrentPageIndex(rebalanced.length - 1);
+      }
+      
+      setNotificationMessage('Content rebalanced across pages');
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 2000);
+    } else {
+      setPages(updatedPages);
+    }
   };
 
   const updateParagraphType = (paragraphIndex, newType) => {
@@ -164,6 +278,21 @@ function AdvancedEditor() {
     [paragraphs[paragraphIndex + 1], paragraphs[paragraphIndex]];
     
     setPages(updatedPages);
+  };
+
+  // Manual rebalance function
+  const manualRebalance = () => {
+    const rebalanced = autoRebalancePages(pages);
+    setPages(rebalanced);
+    
+    // Adjust current page index if needed
+    if (currentPageIndex >= rebalanced.length) {
+      setCurrentPageIndex(rebalanced.length - 1);
+    }
+    
+    setNotificationMessage(`Content rebalanced into ${rebalanced.length} page${rebalanced.length > 1 ? 's' : ''}`);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
   };
 
   const handleImageUpload = (event) => {
@@ -390,6 +519,9 @@ function AdvancedEditor() {
             <button onClick={() => fileInputRef.current.click()} className="tool-btn">
               + Add Image
             </button>
+            <button onClick={manualRebalance} className="tool-btn rebalance-btn" title="Automatically redistribute content across pages">
+              ⚖️ Rebalance Pages
+            </button>
             <input
               type="file"
               ref={fileInputRef}
@@ -420,8 +552,35 @@ function AdvancedEditor() {
         {/* Center - Editor Area */}
         <div className="editor-area">
           <div className="editor-toolbar">
-            <h2>Editing Page {currentPage.pageNumber}</h2>
-            <p className="paragraph-count">{currentPage.paragraphs.length} items on this page</p>
+            <div>
+              <h2>Editing Page {currentPage.pageNumber}</h2>
+              <p className="paragraph-count">{currentPage.paragraphs.length} items on this page</p>
+            </div>
+            <div className="page-capacity-indicator">
+              {(() => {
+                const currentHeight = calculatePageHeight(currentPage.paragraphs);
+                const percentage = (currentHeight / REALISTIC_CONTENT_HEIGHT_MM) * 100;
+                const isOverflow = percentage > 100;
+                const isNearFull = percentage > 85;
+                
+                return (
+                  <div className="capacity-wrapper">
+                    <span className={`capacity-label ${isOverflow ? 'overflow' : isNearFull ? 'warning' : ''}`}>
+                      {isOverflow ? '⚠️ Page Overflow!' : isNearFull ? '⚠️ Near Full' : '✓ Page OK'}
+                    </span>
+                    <div className="capacity-bar">
+                      <div 
+                        className={`capacity-fill ${isOverflow ? 'overflow' : isNearFull ? 'warning' : ''}`}
+                        style={{ width: `${Math.min(100, percentage)}%` }}
+                      />
+                    </div>
+                    <span className="capacity-text">
+                      {Math.round(percentage)}% full ({Math.round(currentHeight)}mm / {REALISTIC_CONTENT_HEIGHT_MM}mm)
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
 
           <div className="editor-content">
