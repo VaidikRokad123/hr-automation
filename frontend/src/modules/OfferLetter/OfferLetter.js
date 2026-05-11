@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './OfferLetter.css';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import apiClient from '../../api/client';
 
 function OfferLetter() {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ function OfferLetter() {
       setLoading(true);
       setError("");
 
-      const response = await axios.post('http://localhost:5000/api/offerletter/generate', {
+      const response = await apiClient.post('/api/offerletter/generate', {
         name,
         gender,
         internType,

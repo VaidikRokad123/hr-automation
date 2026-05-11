@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './AdvancedEditor.css';
 import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../../api/client';
 
 function AdvancedEditor() {
   const location = useLocation();
@@ -217,7 +217,7 @@ function AdvancedEditor() {
     try {
       setLoading(true);
       setError('');
-      const response = await axios.get('http://localhost:5000/api/offerletter/data');
+      const response = await apiClient.get('/api/offerletter/data');
       
       if (response.data.success) {
         const { pages: backendPages, metadata: backendMetadata } = response.data.data;
@@ -501,7 +501,7 @@ function AdvancedEditor() {
       setCompiling(true);
       setError('');
 
-      const response = await axios.post('http://localhost:5000/api/offerletter/compile', {
+      const response = await apiClient.post('/api/offerletter/compile', {
         pages,
         metadata
       });

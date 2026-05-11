@@ -1,11 +1,30 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import mongoose from 'mongoose';
 
 import offerLetterRoutes from './routes/offerLetterRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import { authenticateToken, authorizeRoles } from './middleware/authMiddleware.js';
+import { ROLE_CEO, ROLE_HR } from './constants/roles.js';
+import { seedDefaultUsers } from './services/seedDefaultUsers.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017';
+
+function requireDatabase(req, res, next) {
+    if (!req.app.locals.dbReady) {
+        return res.status(503).json({
+            success: false,
+            message: 'Database is not available right now. The backend is running in degraded mode.'
+        });
+    }
+
+    next();
+}
 
 // Middleware
 app.use(cors());
@@ -24,12 +43,43 @@ app.use(
 );
 
 // Routes
-app.use('/api/offerletter', offerLetterRoutes);
+app.use('/api/auth', requireDatabase, authRoutes);
+app.use('/api/users', requireDatabase, authenticateToken, userRoutes);
+app.use('/api/offerletter', authenticateToken, authorizeRoles(ROLE_CEO, ROLE_HR), offerLetterRoutes);
 
 app.get('/', (req, res) => {
-    res.json({ message: 'HR Management API is running' });
+    res.json({
+        message: 'HR Management API is running',
+        databaseReady: Boolean(req.app.locals.dbReady)
+    });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+async function startServer() {
+    app.locals.dbReady = false;
+
+    try {
+        console.log('Connecting to MongoDB...');
+        await mongoose.connect(MONGODB_URI, {
+            dbName: process.env.MONGODB_DB_NAME || 'hr_management',
+            serverSelectionTimeoutMS: 5000,
+            connectTimeoutMS: 5000
+        });
+
+        console.log('Seeding default users...');
+        await seedDefaultUsers();
+        app.locals.dbReady = true;
+
+        app.listen(PORT, () => {
+            console.log(`Connected to MongoDB: ${process.env.MONGODB_DB_NAME || 'hr_management'}`);
+            console.log(`Server is running on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error('MongoDB unavailable, starting backend in degraded mode:', error.message);
+
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT} (database disabled)`);
+        });
+    }
+}
+
+startServer();
