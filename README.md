@@ -6,10 +6,14 @@ A full-stack HR management application for generating offer letters with an adva
 
 - **Offer Letter Generator**: Create professional internship/job offer letters
 - **Advanced PDF Editor**: Edit content, manage pages, insert variables dynamically
-- **Real-time Preview**: See PDF changes instantly
-- **Multi-page Support**: Automatic pagination with smart content distribution
+- **Real-time Preview**: See PDF changes instantly with embedded viewer
+- **Smart Pagination**: Automatic content rebalancing across pages with overflow detection
 - **Variable System**: Insert dynamic data like name, dates, salary, etc.
 - **Professional Templates**: Pre-designed letterhead with company branding
+- **Content Type Support**: Date, recipient, subject, paragraph, signature, company, separator, footer, and image blocks
+- **Image Upload**: Add images directly into offer letters
+- **Split & Merge**: Split paragraphs by newlines or paste multiple paragraphs at once
+- **Page Capacity Indicator**: Visual feedback showing page fullness and overflow warnings
 
 ## Project Structure
 
@@ -130,17 +134,23 @@ Frontend runs on: `http://localhost:3000`
 
 1. After generating a letter, click **Advanced Edit**
 2. Features available:
-   - **Page Management**: Add/delete pages, switch between pages
-   - **Content Editing**: Edit any paragraph, change types (date, subject, paragraph, etc.)
-   - **Reorder Content**: Move paragraphs up/down
-   - **Add Images**: Upload and insert images
-   - **Insert Variables**: Click in a text field, then click a variable button to insert
+   - **Page Management**: Add/delete pages, switch between pages, view paragraph count per page
+   - **Content Editing**: Edit any paragraph, change types (date, subject, paragraph, signature, company, separator, footer)
+   - **Reorder Content**: Move paragraphs up/down within a page
+   - **Add Images**: Upload and insert images (automatically sized to 55mm height)
+   - **Insert Variables**: Click in a text field first, then click a variable button to insert at cursor position
+   - **Split Paragraphs**: Use the ✂️ button to split paragraphs by newlines
+   - **Paste Multiple Paragraphs**: Paste text with double newlines to automatically create separate paragraphs
+   - **Rebalance Pages**: Manually trigger content redistribution across pages (⚖️ button)
+   - **Auto-Rebalancing**: Automatic page rebalancing when content exceeds 110% capacity
+   - **Page Capacity Indicator**: Real-time visual feedback showing page fullness (green: OK, yellow: near full, red: overflow)
    - **Compile PDF**: Generate updated PDF with your changes
    - **Download**: Open PDF in new tab for download
+   - **Notifications**: Toast notifications for all actions (added, deleted, split, rebalanced, etc.)
 
 ### Available Variables
 
-Click in a text field first, then click these buttons to insert:
+**Important**: Click in a text field first to set cursor position, then click these buttons to insert:
 - `${name}` - Candidate name
 - `${upperName}` - Name in uppercase
 - `${gender}` - Gender
@@ -153,6 +163,8 @@ Click in a text field first, then click these buttons to insert:
 - `${salaryType}` - Paid/unpaid
 - `${salaryAmount}` - Salary amount
 - `${date}` - Current date
+
+Variables are inserted at the cursor position and can be mixed with regular text.
 
 ## API Endpoints
 
@@ -246,15 +258,30 @@ wkhtml.command = 'C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe';
 - Ensure wkhtmltopdf is installed and path is correct
 - Check that images exist in `backend/public/images/offerletter/`
 - Verify file permissions on `GeneratedOfferLetter` folder
+- On Windows, verify path: `C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe`
 
 ### Variables Not Inserting
-- Click in the text field first to set cursor position
-- Ensure you're on the correct page
+- **Must click in the text field first** to set cursor position
+- Ensure you're on the correct page (variables only insert on current page)
 - Check browser console for errors
+- Notification will appear: "Please click in a text field first" if no field is selected
 
-### Extra Blank Pages
-- This has been optimized in the latest version
-- Spacing and pagination logic automatically handles content distribution
+### Page Overflow Issues
+- Watch the page capacity indicator (shows percentage and mm used)
+- Red "⚠️ Page Overflow!" means content exceeds safe zone
+- Click "⚖️ Rebalance Pages" to automatically redistribute content
+- Auto-rebalancing triggers at 110% capacity
+- Safe content height: 239mm per page (297mm - 30mm top - 28mm bottom)
+
+### Content Not Splitting
+- Use double newlines (`\n\n`) when pasting to auto-split paragraphs
+- Use the ✂️ split button to manually split by newlines
+- Single newlines within a paragraph are preserved
+
+### Images Not Displaying
+- Supported formats: JPG, PNG, GIF, WebP
+- Images are automatically sized to 55mm height
+- Check browser console for base64 encoding errors
 
 ### Port Already in Use
 ```bash
@@ -265,6 +292,11 @@ taskkill /PID <PID> /F
 # Linux/Mac
 lsof -ti:5000 | xargs kill -9
 ```
+
+### PDF Preview Not Updating
+- Click "🔨 Compile PDF" to regenerate
+- Preview uses iframe with timestamp query parameter to force reload
+- Check browser console for compilation errors
 
 ## Development
 
@@ -290,15 +322,55 @@ lsof -ti:5000 | xargs kill -9
 5. wkhtmltopdf converts HTML → PDF
 6. PDF saved and URL returned to frontend
 
+**Advanced Editor Flow:**
+1. Editor fetches structured data from `/api/offerletter/data`
+2. User edits content → Real-time height calculation using DOM measurement
+3. Page capacity indicator shows fullness (green/yellow/red)
+4. Auto-rebalancing triggers at 110% capacity
+5. Manual rebalance redistributes all content across optimal pages
+6. Compile sends updated structure to `/api/offerletter/compile`
+7. Backend regenerates PDF → Returns new URL with timestamp
+8. Preview iframe reloads with new PDF
+
+## Technical Details
+
+### Page Layout Specifications
+- **Page Size**: A4 (210mm × 297mm)
+- **Top Padding**: 30mm (letterhead space)
+- **Bottom Safe Zone**: 28mm (footer space)
+- **Content Area**: 239mm height (297 - 30 - 28)
+- **Side Margins**: 25mm left and right
+- **Conversion**: 96 DPI (3.78 pixels per mm)
+
+### Content Type Styling
+- **Date**: Right-aligned at 125mm, 6mm bottom margin
+- **To (Recipient)**: Line height 1.5, 4mm bottom margin
+- **Subject**: Center-aligned, bold, 4mm margins
+- **Paragraph**: Justified text, 4mm bottom margin, 1mm paragraph spacing
+- **Signature**: 6mm top margin, 40mm × 18mm signature space
+- **Company**: 4mm margins
+- **Separator**: Center-aligned, 4mm margins
+- **Image**: 100% width, 55mm height, object-fit contain, 10mm margins
+
+### Height Calculation
+- Frontend uses DOM measurement for accurate height calculation
+- Hidden measurement div renders content with exact CSS styles
+- Fallback estimation for server-side or when DOM unavailable
+- Real-time calculation on every content change
+
 ## Future Enhancements
 
-- 🔜 Multiple templates support
+- 🔜 Multiple templates support (different letterhead designs)
 - 🔜 Bulk generation from CSV/Excel
-- 🔜 Email integration
-- 🔜 Digital signature support
-- 🔜 Version history
-- 🔜 Custom branding options
-- 🔜 Export to Word format
+- 🔜 Email integration (send offers directly)
+- 🔜 Digital signature support (e-signature integration)
+- 🔜 Version history (track changes and revisions)
+- 🔜 Custom branding options (upload custom letterheads)
+- 🔜 Export to Word format (.docx)
+- 🔜 Undo/Redo functionality in editor
+- 🔜 Drag-and-drop paragraph reordering
+- 🔜 Rich text formatting (bold, italic, underline)
+- 🔜 Table support in editor
 
 ## License
 
