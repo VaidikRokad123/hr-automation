@@ -31,20 +31,20 @@ export default function LoginPage() {
         <div className="auth-shell">
             <div className="auth-card">
                 <div className="auth-copy">
-                    <p className="eyebrow">HR management access</p>
+                    <p className="eyebrow">HR portal</p>
                     <div className="auth-hero">
-                        <h1>Sign in to continue</h1>
+                        <h1>Login to the portal</h1>
                         <p className="auth-note">
-                            CEO and HR can manage workers and resumes. Worker accounts currently have no dashboard actions.
+                            Use a CEO, HR, or Worker account to access the system.
                         </p>
                         <div className="auth-badges">
-                            <span className="hero-pill">Token auth</span>
+                            <span className="hero-pill">Token login</span>
                             <span className="hero-pill">Role access</span>
-                            <span className="hero-pill">Resume tools</span>
+                            <span className="hero-pill">Resume management</span>
                         </div>
                     </div>
                     <div className="demo-box">
-                        <strong>Demo accounts</strong>
+                        <strong>Sample accounts</strong>
                         <span>CEO: ceo@hrsystem.local</span>
                         <span>HR: hr@hrsystem.local</span>
                         <span>Worker: worker@hrsystem.local</span>
@@ -81,7 +81,7 @@ export default function LoginPage() {
                         {loading ? 'Signing in...' : 'Login'}
                     </button>
 
-                    <p className="empty-inline">Use the demo buttons above for a fast role preview.</p>
+                    <p className="empty-inline">Use the sample buttons above for a quick role preview.</p>
                 </form>
             </div>
         </div>

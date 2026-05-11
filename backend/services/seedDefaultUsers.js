@@ -69,4 +69,65 @@ export async function seedDefaultUsers() {
         },
         hashedPassword
     );
+
+    const workerSeeds = [
+        {
+            name: 'Aarav Patel',
+            email: 'aarav.patel@hrsystem.local',
+            summary: 'Frontend developer focused on clean UI and component systems.',
+            skills: ['React', 'CSS', 'UI Design'],
+            experience: '2 years building internal dashboards.',
+            education: 'BSc Computer Science'
+        },
+        {
+            name: 'Meera Shah',
+            email: 'meera.shah@hrsystem.local',
+            summary: 'QA analyst with strong attention to process and regression coverage.',
+            skills: ['Testing', 'Automation', 'Documentation'],
+            experience: '3 years in software quality assurance.',
+            education: 'BTech Information Technology'
+        },
+        {
+            name: 'Rohan Desai',
+            email: 'rohan.desai@hrsystem.local',
+            summary: 'Backend developer working on APIs and data workflows.',
+            skills: ['Node.js', 'MongoDB', 'API Design'],
+            experience: '4 years in backend engineering.',
+            education: 'MCA'
+        },
+        {
+            name: 'Isha Mehta',
+            email: 'isha.mehta@hrsystem.local',
+            summary: 'Operations associate supporting coordination and reporting.',
+            skills: ['Operations', 'Excel', 'Planning'],
+            experience: '2 years in operations support.',
+            education: 'MBA'
+        },
+        {
+            name: 'Karan Joshi',
+            email: 'karan.joshi@hrsystem.local',
+            summary: 'Support engineer assisting internal users and system checks.',
+            skills: ['Support', 'Troubleshooting', 'Communication'],
+            experience: '1 year in technical support.',
+            education: 'BSc Information Technology'
+        }
+    ];
+
+    for (const workerSeed of workerSeeds) {
+        await createUserIfMissing(
+            {
+                name: workerSeed.name,
+                email: workerSeed.email,
+                role: ROLE_WORKER,
+                resume: {
+                    summary: workerSeed.summary,
+                    skills: workerSeed.skills,
+                    experience: workerSeed.experience,
+                    education: workerSeed.education,
+                    updatedAt: now
+                }
+            },
+            hashedPassword
+        );
+    }
 }

@@ -1,381 +1,216 @@
 # HR Management System
 
-A full-stack HR management application for generating offer letters with an advanced PDF editor.
+A full-stack HR management application with JWT authentication, role-based access, worker resume management, and offer letter generation.
 
-## Features
+## What It Does
 
-- **Offer Letter Generator**: Create professional internship/job offer letters
-- **Advanced PDF Editor**: Edit content, manage pages, insert variables dynamically
-- **Real-time Preview**: See PDF changes instantly with embedded viewer
-- **Smart Pagination**: Automatic content rebalancing across pages with overflow detection
-- **Variable System**: Insert dynamic data like name, dates, salary, etc.
-- **Professional Templates**: Pre-designed letterhead with company branding
-- **Content Type Support**: Date, recipient, subject, paragraph, signature, company, separator, footer, and image blocks
-- **Image Upload**: Add images directly into offer letters
-- **Split & Merge**: Split paragraphs by newlines or paste multiple paragraphs at once
-- **Page Capacity Indicator**: Visual feedback showing page fullness and overflow warnings
+- CEO, HR, and Worker login with token-based auth
+- Role-based dashboard access
+- Worker resume viewing and editing for CEO/HR users
+- Offer letter generation and PDF preview
+- Advanced offer letter editor with page management and live compilation
+- MongoDB-backed user records with seeded demo accounts
 
 ## Project Structure
 
-```
+```text
 hr/
-├── frontend/              # React application
+├── frontend/
 │   ├── src/
-│   │   ├── modules/
-│   │   │   └── OfferLetter/
-│   │   │       ├── OfferLetter.js        # Main form
-│   │   │       ├── AdvancedEditor.js     # PDF editor
-│   │   │       ├── OfferLetter.css
-│   │   │       └── AdvancedEditor.css
-│   │   ├── App.js
-│   │   └── index.js
+│   │   ├── api/
+│   │   │   └── client.js
+│   │   ├── components/
+│   │   │   └── ProtectedRoute.js
+│   │   ├── context/
+│   │   │   └── AuthContext.js
+│   │   ├── pages/
+│   │   │   ├── LoginPage.js
+│   │   │   └── DashboardPage.js
+│   │   └── modules/
+│   │       └── OfferLetter/
+│   │           ├── OfferLetter.js
+│   │           ├── AdvancedEditor.js
+│   │           ├── OfferLetter.css
+│   │           └── AdvancedEditor.css
 │   └── package.json
 │
-├── backend/               # Express API
+├── backend/
 │   ├── controllers/
-│   │   └── wkhtmlOfferLetterController.js  # PDF generation logic
+│   │   ├── authController.js
+│   │   ├── userController.js
+│   │   └── wkhtmlOfferLetterController.js
+│   ├── constants/
+│   │   └── roles.js
+│   ├── middleware/
+│   │   └── authMiddleware.js
+│   ├── models/
+│   │   └── userModel.js
 │   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── userRoutes.js
 │   │   └── offerLetterRoutes.js
+│   ├── services/
+│   │   ├── seedDefaultUsers.js
+│   │   └── offerLetter/
+│   │       ├── offerLetterDataBuilder.js
+│   │       ├── offerLetterState.js
+│   │       ├── pdfGenerator.js
+│   │       ├── pdfLayout.js
+│   │       ├── pdfPagination.js
+│   │       └── pdfTemplateBuilder.js
+│   ├── utils/
+│   │   ├── dateFormatter.js
+│   │   ├── htmlHelpers.js
+│   │   └── sanitizeUser.js
 │   ├── public/
 │   │   └── images/
 │   │       └── offerletter/
-│   │           ├── temp.jpg/png          # Letterhead template
-│   │           ├── sign2.png             # Signature image
-│   │           └── transparent.png       # Overlay (optional)
-│   ├── GeneratedOfferLetter/             # Output PDFs
+│   ├── GeneratedOfferLetter/
+│   ├── scripts/
+│   │   └── seedUsers.js
 │   ├── server.js
 │   └── package.json
 │
-└── README.md              # This file
+└── README.md
 ```
 
-## Prerequisites
+## Requirements
 
-- Node.js (v14 or higher)
-- npm or yarn
-- wkhtmltopdf installed on your system
+- Node.js 18+ recommended
+- npm
+- MongoDB Atlas or a local MongoDB instance
+- wkhtmltopdf installed on Windows if you want PDF generation to work
 
-### Installing wkhtmltopdf
+## Setup
 
-**Windows:**
-1. Download from: https://wkhtmltopdf.org/downloads.html
-2. Install to: `C:\Program Files\wkhtmltopdf\`
-3. The path is already configured in the controller
-
-**Linux:**
-```bash
-sudo apt-get install wkhtmltopdf
-```
-
-**macOS:**
-```bash
-brew install wkhtmltopdf
-```
-
-## Setup Instructions
-
-### 1. Backend Setup
+### 1. Backend
 
 ```bash
-# Navigate to backend
 cd backend
-
-# Install dependencies
 npm install
+```
 
-# Ensure images exist in public/images/offerletter/
-# Required files: temp.jpg or temp.png, sign2.png
+Create or update `backend/.env` with these values:
 
-# Start the server
+```env
+PORT=5000
+MONGODB_URI=your_mongodb_connection_string
+MONGODB_DB_NAME=hr_management
+JWT_SECRET=your_secret_key
+JWT_EXPIRES_IN=7d
+BASE_URL=http://localhost:5000
+WKHTMLTOPDF_PATH=C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe
+```
+
+Run the backend:
+
+```bash
 npm start
 ```
 
-Backend runs on: `http://localhost:5000`
+Seed the demo users:
 
-For development with auto-reload:
 ```bash
-npm run dev
+npm run seed:users
 ```
 
-### 2. Frontend Setup
+The backend starts in degraded mode if MongoDB is unavailable, but auth and worker endpoints need the database to be connected.
+
+### 2. Frontend
 
 ```bash
-# Navigate to frontend
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start the development server
 npm start
 ```
 
-Frontend runs on: `http://localhost:3000`
+Frontend runs on `http://localhost:3000` and proxies API calls to `http://localhost:5000`.
 
-## Usage
+## Demo Accounts
 
-### Generating an Offer Letter
+Password for all seeded accounts: `Password123!`
 
-1. Open `http://localhost:3000` in your browser
-2. Fill in the form:
-   - Name
-   - Gender (Male/Female)
-   - Job Type (Internship/Part Time/Full Time)
-   - Duration Type (Month/Year)
-   - Duration (number)
-   - Role
-   - Start Date & End Date
-   - Salary Type (Paid/Unpaid)
-   - Salary Amount (if paid)
-3. Click **Generate Offer Letter**
-4. Preview appears on the right side
+- CEO: `ceo@hrsystem.local`
+- HR: `hr@hrsystem.local`
+- Worker: `worker@hrsystem.local`
+- Dummy workers:
+  - `aarav.patel@hrsystem.local`
+  - `meera.shah@hrsystem.local`
+  - `rohan.desai@hrsystem.local`
+  - `isha.mehta@hrsystem.local`
+  - `karan.joshi@hrsystem.local`
 
-### Using the Advanced Editor
+## Main Screens
 
-1. After generating a letter, click **Advanced Edit**
-2. Features available:
-   - **Page Management**: Add/delete pages, switch between pages, view paragraph count per page
-   - **Content Editing**: Edit any paragraph, change types (date, subject, paragraph, signature, company, separator, footer)
-   - **Reorder Content**: Move paragraphs up/down within a page
-   - **Add Images**: Upload and insert images (automatically sized to 55mm height)
-   - **Insert Variables**: Click in a text field first, then click a variable button to insert at cursor position
-   - **Split Paragraphs**: Use the ✂️ button to split paragraphs by newlines
-   - **Paste Multiple Paragraphs**: Paste text with double newlines to automatically create separate paragraphs
-   - **Rebalance Pages**: Manually trigger content redistribution across pages (⚖️ button)
-   - **Auto-Rebalancing**: Automatic page rebalancing when content exceeds 110% capacity
-   - **Page Capacity Indicator**: Real-time visual feedback showing page fullness (green: OK, yellow: near full, red: overflow)
-   - **Compile PDF**: Generate updated PDF with your changes
-   - **Download**: Open PDF in new tab for download
-   - **Notifications**: Toast notifications for all actions (added, deleted, split, rebalanced, etc.)
+### Login
 
-### Available Variables
+- Simple formal login page
+- Quick buttons for demo accounts
+- Token-based sign in
 
-**Important**: Click in a text field first to set cursor position, then click these buttons to insert:
-- `${name}` - Candidate name
-- `${upperName}` - Name in uppercase
-- `${gender}` - Gender
-- `${internType}` - Job type (internship/part time/full time)
-- `${durationType}` - Duration type (month/year)
-- `${duration}` - Duration number
-- `${role}` - Job role
-- `${startDate}` - Formatted start date
-- `${endDate}` - Formatted end date
-- `${salaryType}` - Paid/unpaid
-- `${salaryAmount}` - Salary amount
-- `${date}` - Current date
+### Dashboard
 
-Variables are inserted at the cursor position and can be mixed with regular text.
+- Two-column desktop layout
+- Workers panel
+- Resume Manager panel
+- Offer Letter Tools panel
+- CEO/HR can edit worker resumes
+- Worker users get a limited dashboard view
+
+### Offer Letter Generator
+
+- Form for name, gender, job type, duration, role, dates, and salary
+- Generates PDF and shows preview
+- Can open the advanced editor after generating a letter
+
+### Advanced Editor
+
+- Page list and content editor
+- Variable insertion
+- Split/rebalance tools
+- PDF compile and download
+- Live page capacity indicator
 
 ## API Endpoints
 
-### Generate Offer Letter
-**POST** `/api/offerletter/generate`
+### Auth
 
-**Request Body:**
-```json
-{
-  "name": "John Doe",
-  "gender": "male",
-  "internType": "internship",
-  "durationType": "month",
-  "duration": "6",
-  "role": "Software Developer",
-  "startDate": "2026-01-01",
-  "endDate": "2026-06-30",
-  "salaryType": "paid",
-  "salaryAmount": "15000"
-}
-```
+- `POST /api/auth/login` - sign in and return JWT
 
-**Response:**
-```json
-{
-  "message": "Offer letter generated successfully",
-  "path": "http://localhost:5000/GeneratedOfferLetter/internship_Letter_JOHN_DOE_1234567890.pdf",
-  "data": {
-    "metadata": { ... },
-    "pages": [ ... ]
-  }
-}
-```
+### Users
 
-### Get Offer Letter Data
-**GET** `/api/offerletter/data`
+- `GET /api/users/me` - current user profile
+- `GET /api/users/workers` - list workers for CEO/HR
+- `PATCH /api/users/workers/:id/resume` - update worker resume data
 
-Returns the last generated offer letter data for editing.
+### Offer Letters
 
-### Compile Offer Letter
-**POST** `/api/offerletter/compile`
+- `POST /api/offerletter/generate` - generate a new offer letter PDF
+- `GET /api/offerletter/data` - get the last offer letter data
+- `POST /api/offerletter/compile` - compile edited offer letter pages into a PDF
 
-**Request Body:**
-```json
-{
-  "pages": [ ... ],
-  "metadata": { ... }
-}
-```
+## Notes
 
-Regenerates PDF with edited content.
-
-## Technologies Used
-
-### Frontend
-- **React** - UI framework
-- **React Router** - Navigation
-- **Axios** - HTTP client
-- **CSS3** - Styling
-
-### Backend
-- **Node.js** - Runtime
-- **Express** - Web framework
-- **wkhtmltopdf** - PDF generation
-- **CORS** - Cross-origin support
-
-## Configuration
-
-### Backend Port
-Default: `5000`
-Change in `backend/server.js`:
-```javascript
-const PORT = process.env.PORT || 5000;
-```
-
-### Frontend Proxy
-Configured in `frontend/package.json`:
-```json
-"proxy": "http://localhost:5000"
-```
-
-### wkhtmltopdf Path (Windows)
-Set in `backend/controllers/wkhtmlOfferLetterController.js`:
-```javascript
-wkhtml.command = 'C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe';
-```
+- `backend/public/images/offerletter/` should contain the base template and signature images used by the PDF generator.
+- `GeneratedOfferLetter/` stores generated PDFs.
+- The frontend uses `frontend/src/api/client.js` for API requests and auth tokens.
+- The dashboard and offer-letter layouts were simplified to a more formal style and now use cleaner panel spacing.
 
 ## Troubleshooting
 
-### PDF Generation Fails
-- Ensure wkhtmltopdf is installed and path is correct
-- Check that images exist in `backend/public/images/offerletter/`
-- Verify file permissions on `GeneratedOfferLetter` folder
-- On Windows, verify path: `C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe`
+### MongoDB connection errors
 
-### Variables Not Inserting
-- **Must click in the text field first** to set cursor position
-- Ensure you're on the correct page (variables only insert on current page)
-- Check browser console for errors
-- Notification will appear: "Please click in a text field first" if no field is selected
+- Check `MONGODB_URI`
+- Confirm your Atlas IP is whitelisted
+- If MongoDB is down, the backend may still start, but database-backed routes will return `503`
 
-### Page Overflow Issues
-- Watch the page capacity indicator (shows percentage and mm used)
-- Red "⚠️ Page Overflow!" means content exceeds safe zone
-- Click "⚖️ Rebalance Pages" to automatically redistribute content
-- Auto-rebalancing triggers at 110% capacity
-- Safe content height: 239mm per page (297mm - 30mm top - 28mm bottom)
+### PDF generation errors
 
-### Content Not Splitting
-- Use double newlines (`\n\n`) when pasting to auto-split paragraphs
-- Use the ✂️ split button to manually split by newlines
-- Single newlines within a paragraph are preserved
+- Confirm `wkhtmltopdf` is installed
+- Confirm `WKHTMLTOPDF_PATH` is correct on Windows
+- Make sure the offer-letter images exist in `backend/public/images/offerletter/`
 
-### Images Not Displaying
-- Supported formats: JPG, PNG, GIF, WebP
-- Images are automatically sized to 55mm height
-- Check browser console for base64 encoding errors
+### Port already in use
 
-### Port Already in Use
-```bash
-# Windows - Kill process on port 5000
-netstat -ano | findstr :5000
-taskkill /PID <PID> /F
-
-# Linux/Mac
-lsof -ti:5000 | xargs kill -9
-```
-
-### PDF Preview Not Updating
-- Click "🔨 Compile PDF" to regenerate
-- Preview uses iframe with timestamp query parameter to force reload
-- Check browser console for compilation errors
-
-## Development
-
-### Adding New Features
-
-**Frontend:**
-1. Create components in `frontend/src/modules/OfferLetter/`
-2. Update routing in `App.js`
-3. Add styles in corresponding CSS files
-
-**Backend:**
-1. Add functions to `wkhtmlOfferLetterController.js`
-2. Create routes in `offerLetterRoutes.js`
-3. Register in `server.js`
-
-### Code Structure
-
-**PDF Generation Flow:**
-1. User submits form → Frontend sends POST request
-2. Backend receives data → Creates structured page data
-3. `repaginateForFooterSafety()` → Optimizes content distribution
-4. HTML template generated with CSS styling
-5. wkhtmltopdf converts HTML → PDF
-6. PDF saved and URL returned to frontend
-
-**Advanced Editor Flow:**
-1. Editor fetches structured data from `/api/offerletter/data`
-2. User edits content → Real-time height calculation using DOM measurement
-3. Page capacity indicator shows fullness (green/yellow/red)
-4. Auto-rebalancing triggers at 110% capacity
-5. Manual rebalance redistributes all content across optimal pages
-6. Compile sends updated structure to `/api/offerletter/compile`
-7. Backend regenerates PDF → Returns new URL with timestamp
-8. Preview iframe reloads with new PDF
-
-## Technical Details
-
-### Page Layout Specifications
-- **Page Size**: A4 (210mm × 297mm)
-- **Top Padding**: 30mm (letterhead space)
-- **Bottom Safe Zone**: 28mm (footer space)
-- **Content Area**: 239mm height (297 - 30 - 28)
-- **Side Margins**: 25mm left and right
-- **Conversion**: 96 DPI (3.78 pixels per mm)
-
-### Content Type Styling
-- **Date**: Right-aligned at 125mm, 6mm bottom margin
-- **To (Recipient)**: Line height 1.5, 4mm bottom margin
-- **Subject**: Center-aligned, bold, 4mm margins
-- **Paragraph**: Justified text, 4mm bottom margin, 1mm paragraph spacing
-- **Signature**: 6mm top margin, 40mm × 18mm signature space
-- **Company**: 4mm margins
-- **Separator**: Center-aligned, 4mm margins
-- **Image**: 100% width, 55mm height, object-fit contain, 10mm margins
-
-### Height Calculation
-- Frontend uses DOM measurement for accurate height calculation
-- Hidden measurement div renders content with exact CSS styles
-- Fallback estimation for server-side or when DOM unavailable
-- Real-time calculation on every content change
-
-## Future Enhancements
-
-- 🔜 Multiple templates support (different letterhead designs)
-- 🔜 Bulk generation from CSV/Excel
-- 🔜 Email integration (send offers directly)
-- 🔜 Digital signature support (e-signature integration)
-- 🔜 Version history (track changes and revisions)
-- 🔜 Custom branding options (upload custom letterheads)
-- 🔜 Export to Word format (.docx)
-- 🔜 Undo/Redo functionality in editor
-- 🔜 Drag-and-drop paragraph reordering
-- 🔜 Rich text formatting (bold, italic, underline)
-- 🔜 Table support in editor
-
-## License
-
-This project is for internal use.
-
-## Support
-
-For issues or questions, contact the development team.
+- Another backend instance is probably already running on port `5000`
+- Stop the existing process or change `PORT` in `.env`

@@ -331,7 +331,7 @@
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 0.8fr 1fr 1.2fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
   max-width: 1440px;
   margin: 0 auto;
@@ -410,6 +410,22 @@
   overflow: hidden;
 }
 
+.offer-panel-wide {
+  grid-column: 1 / -1;
+}
+
+.offer-panel-wide .OfferLetterContainer {
+  width: 100%;
+}
+
+.offer-panel-wide .FormSection {
+  max-width: 380px;
+}
+
+.offer-panel-wide .PreviewSection {
+  min-width: 0;
+}
+
 @media (max-width: 1200px) {
   .dashboard-hero,
   .dashboard-grid {
@@ -447,5 +463,152 @@
   .hero-actions button,
   .logout-btn {
     width: 100%;
+  }
+}
+
+.App {
+  background: var(--bg);
+}
+
+.auth-card,
+.dashboard-header,
+.status-card,
+.panel,
+.empty-state,
+.auth-form,
+.auth-copy,
+.FormSection,
+.PreviewSection,
+.editor-header,
+.sidebar,
+.editor-area,
+.paragraph-editor,
+.error-banner,
+.status-message,
+.notification-popup {
+  border-radius: 16px;
+}
+
+.auth-card,
+.dashboard-header,
+.panel,
+.status-card,
+.FormSection,
+.PreviewSection,
+.sidebar,
+.editor-area,
+.paragraph-editor {
+  box-shadow: var(--shadow);
+}
+
+.auth-copy,
+.hero-panel {
+  background: #1f2933;
+  color: #ffffff;
+}
+
+.auth-copy::after {
+  content: none;
+}
+
+.auth-copy h1,
+.dashboard-header h1,
+.panel-header h2,
+.hero-panel h1,
+.FormSection h2,
+.PreviewSection h2,
+.editor-header h1,
+.editor-toolbar h2,
+.sidebar-section h3,
+.error-container h2 {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.auth-note,
+.dashboard-header p,
+.empty-state p,
+.empty-inline,
+.status-card p,
+.hero-panel p,
+.helper-text,
+.paragraph-count,
+.capacity-text,
+.no-preview,
+.error-container p {
+  color: var(--muted);
+}
+
+.hero-pill,
+.chip {
+  background: #eef2f6;
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+.ghost-btn {
+  background: #ffffff;
+  color: var(--text);
+}
+
+.auth-form,
+.resume-form,
+.editor-header,
+.dashboard-header,
+.panel,
+.FormSection,
+.PreviewSection,
+.sidebar,
+.editor-area {
+  background: #ffffff;
+}
+
+.dashboard-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.dashboard-hero {
+  grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+}
+
+.hero-actions,
+.chip-row,
+.auth-badges,
+.variables-list,
+.header-actions,
+.paragraph-actions {
+  gap: 8px;
+}
+
+.worker-card,
+.page-item,
+.add-page-btn,
+.tool-btn,
+.variable-btn,
+.move-btn,
+.split-btn,
+.delete-btn,
+.back-btn,
+.compile-btn,
+.download-btn,
+.generate-btn,
+.advanced-btn {
+  border-radius: 12px;
+}
+
+.notification-popup,
+.error-banner,
+.auth-error,
+.status-message {
+  border: 1px solid var(--line);
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid,
+  .dashboard-hero,
+  .auth-card {
+    grid-template-columns: 1fr;
   }
 }

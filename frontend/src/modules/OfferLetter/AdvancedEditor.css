@@ -734,3 +734,117 @@
     justify-content: flex-end;
   }
 }
+
+.AdvancedEditor {
+  background: var(--bg);
+}
+
+.AdvancedEditor .editor-container {
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.AdvancedEditor .sidebar,
+.AdvancedEditor .editor-area,
+.AdvancedEditor .loading-container,
+.AdvancedEditor .error-container,
+.AdvancedEditor .editor-header,
+.AdvancedEditor .paragraph-editor,
+.AdvancedEditor .preview-section {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 30px rgba(31, 41, 51, 0.08);
+}
+
+.AdvancedEditor .editor-header {
+  padding: 16px 24px;
+}
+
+.AdvancedEditor .editor-header h1,
+.AdvancedEditor .editor-toolbar h2,
+.AdvancedEditor .sidebar-section h3,
+.AdvancedEditor .preview-section h3 {
+  font-family: 'Manrope', sans-serif;
+  color: var(--text);
+}
+
+.AdvancedEditor .back-btn,
+.AdvancedEditor .compile-btn,
+.AdvancedEditor .download-btn,
+.AdvancedEditor .add-page-btn,
+.AdvancedEditor .tool-btn,
+.AdvancedEditor .move-btn,
+.AdvancedEditor .split-btn,
+.AdvancedEditor .delete-btn,
+.AdvancedEditor .variable-btn {
+  border-radius: 12px;
+}
+
+.AdvancedEditor .back-btn {
+  background: #f1f5f9;
+  color: var(--text);
+}
+
+.AdvancedEditor .back-btn:hover {
+  background: #e2e8f0;
+}
+
+.AdvancedEditor .compile-btn,
+.AdvancedEditor .add-page-btn,
+.AdvancedEditor .tool-btn,
+.AdvancedEditor .move-btn {
+  background: #31506d;
+}
+
+.AdvancedEditor .download-btn,
+.AdvancedEditor .split-btn {
+  background: #4b6b84;
+}
+
+.AdvancedEditor .delete-btn {
+  background: #94a3b8;
+}
+
+.AdvancedEditor .page-item,
+.AdvancedEditor .paragraph-editor,
+.AdvancedEditor .variable-btn,
+.AdvancedEditor .type-selector,
+.AdvancedEditor .pdf-preview {
+  border-color: var(--line);
+}
+
+.AdvancedEditor .page-item.active {
+  border-color: #31506d;
+  background: #eef2f6;
+}
+
+.AdvancedEditor .capacity-fill,
+.AdvancedEditor .capacity-label {
+  background: #31506d;
+}
+
+.AdvancedEditor .capacity-fill.warning,
+.AdvancedEditor .capacity-label.warning {
+  background: #b7791f;
+  color: #b7791f;
+}
+
+.AdvancedEditor .capacity-fill.overflow,
+.AdvancedEditor .capacity-label.overflow {
+  background: #b91c1c;
+  color: #b91c1c;
+}
+
+.AdvancedEditor .editor-content,
+.AdvancedEditor .sidebar {
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+@media (max-width: 1200px) {
+  .AdvancedEditor .editor-container {
+    flex-direction: column;
+  }
+}

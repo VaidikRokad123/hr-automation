@@ -1,10 +1,12 @@
 .OfferLetterContainer {
   display: flex;
-  gap: 22px;
+  flex-direction: row;
+  gap: 18px;
   padding: 0;
-  min-height: 100vh;
+  min-height: 680px;
   background: transparent;
   position: relative;
+  align-items: flex-start;
 }
 
 .notification-popup {
@@ -33,28 +35,28 @@
 }
 
 .FormSection {
-  flex: 0 0 400px;
-  background: rgba(255, 255, 255, 0.9);
+  flex: 0 0 380px;
+  width: 100%;
+  background: #ffffff;
   padding: 28px;
-  border-radius: 24px;
-  box-shadow: 0 18px 40px rgba(16, 42, 67, 0.08);
-  border: 1px solid rgba(16, 42, 67, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(31, 41, 51, 0.08);
+  border: 1px solid #d6dbe1;
   height: fit-content;
   overflow-y: auto;
   max-height: calc(100vh - 40px);
-  backdrop-filter: blur(12px);
 }
 
 .PreviewSection {
   flex: 1;
-  background: rgba(255, 255, 255, 0.9);
+  width: 100%;
+  background: #ffffff;
   padding: 28px;
-  border-radius: 24px;
-  box-shadow: 0 18px 40px rgba(16, 42, 67, 0.08);
-  border: 1px solid rgba(16, 42, 67, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(31, 41, 51, 0.08);
+  border: 1px solid #d6dbe1;
   display: flex;
   flex-direction: column;
-  backdrop-filter: blur(12px);
 }
 
 .FormSection h2,
@@ -63,8 +65,8 @@
   color: var(--text);
   text-align: center;
   margin-bottom: 24px;
-  font-size: 1.6rem;
-  font-family: 'Fraunces', serif;
+  font-size: 1.35rem;
+  font-family: 'Manrope', sans-serif;
 }
 
 .form-group {
@@ -142,7 +144,7 @@
 }
 
 .generate-btn {
-  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  background: var(--accent-2);
   color: white;
 }
 
@@ -158,7 +160,7 @@
 }
 
 .advanced-btn {
-  background: linear-gradient(135deg, #6f4aa8, #8d63c9);
+  background: #31506d;
   color: white;
 }
 
@@ -168,7 +170,7 @@
 }
 
 .download-btn {
-  background: linear-gradient(135deg, #2f855a, #48bb78);
+  background: #4b6b84;
   color: white;
 }
 
@@ -180,9 +182,9 @@
 .pdf-viewer {
   width: 100%;
   flex: 1;
-  border: 1px solid rgba(16, 42, 67, 0.12);
-  border-radius: 18px;
-  min-height: 600px;
+  border: 1px solid #d6dbe1;
+  border-radius: 14px;
+  min-height: 560px;
   background: #fff;
 }
 
@@ -221,4 +223,10 @@
   .PreviewSection {
     min-height: 600px;
   }
+}
+
+.OfferLetterContainer .FormSection,
+.OfferLetterContainer .PreviewSection {
+  position: relative;
+  top: 0;
 }

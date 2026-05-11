@@ -73,33 +73,27 @@ export default function DashboardPage() {
         <div className="dashboard-shell">
             <header className="dashboard-header">
                 <div>
-                    <p className="eyebrow">Authenticated workspace</p>
+                    <p className="eyebrow">HR portal</p>
                     <h1>{user?.name}</h1>
                     <p>{user?.role?.toUpperCase()} access</p>
                 </div>
-                <button className="logout-btn" onClick={handleLogout}>Logout</button>
+                <button type="button" className="logout-btn" onClick={handleLogout}>Logout</button>
             </header>
 
             <section className="dashboard-hero">
                 <div className="hero-panel">
                     <p className="eyebrow">Workspace overview</p>
-                    <h1>Manage people, resumes, and offer letters from one secure place.</h1>
+                    <h1>Manage people, resumes, and offer letters in one place.</h1>
                     <p>
-                        This dashboard is designed for quick role switching, worker lookup, and resume maintenance.
-                        HR and CEO can edit worker records. Worker users land on a read-only view for now.
+                        HR and CEO can review workers and update resumes. Worker users see a limited dashboard.
                     </p>
                     <div className="hero-actions">
                         <button className="logout-btn" type="button" onClick={() => navigate('/advanced-editor')}>
-                            Open offer editor
+                            Open editor
                         </button>
                         <button className="ghost-btn" type="button" onClick={handleLogout}>
                             Sign out
                         </button>
-                    </div>
-                    <div className="chip-row">
-                        <span className="chip">JWT secured</span>
-                        <span className="chip">CEO / HR / Worker roles</span>
-                        <span className="chip">Resume review</span>
                     </div>
                 </div>
 
@@ -142,6 +136,7 @@ export default function DashboardPage() {
                                 <button
                                     key={worker._id}
                                     className={`worker-card ${selectedWorkerId === worker._id ? 'active' : ''}`}
+                                    type="button"
                                     onClick={() => selectWorker(worker)}
                                 >
                                     <strong>{worker.name}</strong>
@@ -206,10 +201,10 @@ export default function DashboardPage() {
                         )}
                     </section>
 
-                    <section className="panel offer-panel">
+                    <section className="panel offer-panel offer-panel-wide">
                         <div className="panel-header">
                             <h2>Offer Letter Tools</h2>
-                            <button className="ghost-btn" onClick={() => navigate('/advanced-editor')}>Open Editor</button>
+                            <button type="button" className="ghost-btn" onClick={() => navigate('/advanced-editor')}>Open Editor</button>
                         </div>
                         <OfferLetter />
                     </section>

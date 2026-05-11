@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
 * {
   margin: 0;
@@ -7,15 +7,15 @@
 }
 
 :root {
-  --bg: #f4efe8;
-  --bg-soft: #eef4f7;
-  --surface: rgba(255, 255, 255, 0.86);
-  --text: #102a43;
-  --muted: #5c677d;
-  --line: rgba(16, 42, 67, 0.12);
-  --accent: #ef6c57;
-  --accent-2: #264653;
-  --shadow: 0 24px 70px rgba(16, 42, 67, 0.12);
+  --bg: #f4f6f8;
+  --bg-soft: #ffffff;
+  --surface: #ffffff;
+  --text: #1f2933;
+  --muted: #5f6b7a;
+  --line: #d6dbe1;
+  --accent: #31506d;
+  --accent-2: #1f2933;
+  --shadow: 0 10px 30px rgba(31, 41, 51, 0.08);
 }
 
 body {
@@ -23,7 +23,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--text);
-  background: linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
+  background: var(--bg);
   min-height: 100vh;
 }
 
