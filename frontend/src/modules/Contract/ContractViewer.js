@@ -2,6 +2,10 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import './ContractAcceptance.css';
 import { sanitizeHtml } from '../../utils/safeHtml';
 
+const COMPANY_LETTERHEAD_STYLE = {
+    backgroundImage: "url('/images/offerletter/temp.jpg')"
+};
+
 function getPageId(page, index) {
     return `page-${page.pageNumber || index + 1}`;
 }
@@ -202,6 +206,7 @@ export default function ContractViewer({
                             id={pageId}
                             data-page-id={pageId}
                             className="contract-page"
+                            style={COMPANY_LETTERHEAD_STYLE}
                             ref={(element) => {
                                 pageRefs.current[pageId] = element;
                             }}

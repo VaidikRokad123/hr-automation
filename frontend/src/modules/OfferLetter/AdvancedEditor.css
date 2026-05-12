@@ -1426,8 +1426,11 @@
   width: min(100%, 420px);
   min-height: 594px;
   margin: 0 auto 18px;
-  padding: 44px 42px;
+  padding: 76px 50px 64px;
   background: #ffffff;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   color: #111827;
   border: 1px solid rgba(15, 23, 42, 0.12);
   box-shadow: 0 18px 38px rgba(15, 23, 42, 0.14);
@@ -1438,8 +1441,8 @@
 
 .AdvancedEditor .contract-preview-page-number {
   position: absolute;
-  top: 14px;
   right: 18px;
+  bottom: 12px;
   color: #64748b;
   font-size: 9px;
 }
@@ -1476,6 +1479,7 @@
 
 .AdvancedEditor .contract-preview-date {
   text-align: right;
+  white-space: nowrap;
 }
 
 .AdvancedEditor .contract-preview-to {

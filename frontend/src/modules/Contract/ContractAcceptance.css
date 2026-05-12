@@ -158,9 +158,12 @@
   width: min(100%, 210mm);
   min-height: 297mm;
   margin: 0 auto;
-  padding: 30mm 25mm;
+  padding: 38mm 25mm 32mm;
   box-sizing: border-box;
   background: #ffffff;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   border: 1px solid #d9e2ec;
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
   font-family: Arial, sans-serif;
@@ -171,13 +174,15 @@
 .contract-page-number {
   position: absolute;
   right: 18mm;
-  top: 12mm;
+  bottom: 10mm;
   color: #9fb3c8;
   font-size: 9pt;
 }
 
 .contract-viewer-date {
-  margin: 0 0 6mm 125mm;
+  margin: 0 0 6mm;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .contract-viewer-to {
@@ -318,12 +323,13 @@
 
   .contract-page {
     min-height: auto;
-    padding: 24px;
+    padding: 68px 24px 48px;
   }
 
   .contract-viewer-date {
     margin-left: 0;
     text-align: right;
+    white-space: nowrap;
   }
 
   .contract-acceptance-bar {

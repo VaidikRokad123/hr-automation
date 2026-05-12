@@ -4,6 +4,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import apiClient from '../../api/client';
 import { sanitizeHtml } from '../../utils/safeHtml';
 
+const COMPANY_LETTERHEAD_STYLE = {
+  backgroundImage: "url('/images/offerletter/temp.jpg')"
+};
+
 function AdvancedEditor() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -31,11 +35,26 @@ function AdvancedEditor() {
   // Keep editor fullness aligned with template layout and footer safety.
   const PAGE_HEIGHT_MM = 297;
   const TOP_PADDING_MM = 30;
+  const SIDE_PADDING_MM = 25;
   const BOTTOM_SAFE_MM = 28;
-  const REALISTIC_CONTENT_HEIGHT_MM = PAGE_HEIGHT_MM - TOP_PADDING_MM - BOTTOM_SAFE_MM;
+  const CONTRACT_TOP_PADDING_MM = 38;
+  const CONTRACT_BOTTOM_SAFE_MM = 32;
+  const ACTIVE_TOP_PADDING_MM = isContractMode ? CONTRACT_TOP_PADDING_MM : TOP_PADDING_MM;
+  const ACTIVE_BOTTOM_SAFE_MM = isContractMode ? CONTRACT_BOTTOM_SAFE_MM : BOTTOM_SAFE_MM;
+  const REALISTIC_CONTENT_HEIGHT_MM = PAGE_HEIGHT_MM - ACTIVE_TOP_PADDING_MM - ACTIVE_BOTTOM_SAFE_MM;
+  const PAGE_PACKING_LIMIT_MM = REALISTIC_CONTENT_HEIGHT_MM - 2;
   const PX_PER_MM = 96 / 25.4;
 
   const stripHtml = (text = '') => String(text).replace(/<[^>]*>/g, '');
+  const resolveEditorVariables = (text = '') => String(text).replace(/\$\{([^}]+)\}/g, (_, key) => {
+    const value = metadata?.[key];
+    return value === undefined || value === null ? '' : String(value);
+  });
+
+  const renumberPages = (pageList = []) => pageList.map((page, index) => ({
+    ...page,
+    pageNumber: index + 1
+  }));
 
   const renderContractPreviewParagraph = (para, index) => {
     const type = para.type || 'paragraph';
@@ -74,7 +93,7 @@ function AdvancedEditor() {
     pageEl.style.color = '#000';
 
     const contentEl = document.createElement('div');
-    contentEl.style.padding = '30mm 25mm 30mm 25mm';
+    contentEl.style.padding = `${ACTIVE_TOP_PADDING_MM}mm ${SIDE_PADDING_MM}mm ${ACTIVE_BOTTOM_SAFE_MM}mm ${SIDE_PADDING_MM}mm`;
     contentEl.style.position = 'relative';
     contentEl.style.height = `${REALISTIC_CONTENT_HEIGHT_MM}mm`;
     contentEl.style.boxSizing = 'content-box';
@@ -87,15 +106,18 @@ function AdvancedEditor() {
 
       let el = document.createElement('div');
       const paraType = para.type || 'paragraph';
-      const safeText = stripHtml(para.content);
+      const processedContent = paraType === 'image' ? para.content : resolveEditorVariables(para.content);
+      const safeHtml = sanitizeHtml(processedContent || '');
+      const safeText = stripHtml(safeHtml);
 
       if (paraType === 'date') {
         el.textContent = safeText;
-        el.style.marginLeft = '125mm';
+        el.style.textAlign = 'right';
+        el.style.whiteSpace = 'nowrap';
         el.style.marginBottom = '6mm';
         el.style.paddingBottom = '1mm';
       } else if (paraType === 'to') {
-        el.innerHTML = para.content;
+        el.innerHTML = safeHtml;
         el.style.lineHeight = '1.5';
         el.style.marginBottom = '4mm';
         el.style.paddingBottom = '1mm';
@@ -111,7 +133,7 @@ function AdvancedEditor() {
         el.style.marginBottom = '4mm';
         el.style.paddingBottom = '2mm';
         const textEl = document.createElement('div');
-        textEl.innerHTML = para.content;
+        textEl.innerHTML = safeHtml;
         textEl.style.marginBottom = '1mm';
         const signEl = document.createElement('div');
         signEl.style.width = '40mm';
@@ -133,7 +155,7 @@ function AdvancedEditor() {
         el.style.paddingBottom = '2mm';
       } else if (paraType === 'image') {
         const imageEl = document.createElement('img');
-        imageEl.src = para.content;
+        imageEl.src = processedContent;
         imageEl.style.maxWidth = '100%';
         imageEl.style.width = '100%';
         imageEl.style.height = '55mm';
@@ -145,7 +167,7 @@ function AdvancedEditor() {
         el.style.marginBottom = '4mm';
         el.style.paddingBottom = '1mm';
         const p = document.createElement('p');
-        p.textContent = safeText;
+        p.innerHTML = safeHtml;
         p.style.margin = '0';
         p.style.marginBottom = '1mm';
         p.style.lineHeight = '1.5';
@@ -159,7 +181,7 @@ function AdvancedEditor() {
     const contentRect = contentEl.getBoundingClientRect();
     // Measure from the top of the *content box* (excluding padding-top),
     // so this matches the backend's CONTENT_MAX_HEIGHT_MM semantics.
-    const contentAreaTop = contentRect.top + (TOP_PADDING_MM * PX_PER_MM);
+    const contentAreaTop = contentRect.top + (ACTIVE_TOP_PADDING_MM * PX_PER_MM);
     let maxBottom = contentAreaTop;
     Array.from(contentEl.children).forEach((child) => {
       const rect = child.getBoundingClientRect();
@@ -171,7 +193,7 @@ function AdvancedEditor() {
   };
 
   const fallbackEstimateHeightMm = (paragraph) => {
-    const content = stripHtml(paragraph.content || '').trim();
+    const content = stripHtml(resolveEditorVariables(paragraph.content || '')).trim();
     if (paragraph.type === 'date') return 9;
     if (paragraph.type === 'to') return 14;
     if (paragraph.type === 'subject') return 12;
@@ -189,40 +211,95 @@ function AdvancedEditor() {
     return measureParagraphsHeightMm(paragraphs);
   };
 
+  const splitParagraphIntoFitAndRest = (paragraph, maxHeightMm) => {
+    if ((paragraph.type || 'paragraph') !== 'paragraph') return null;
+
+    const words = stripHtml(resolveEditorVariables(paragraph.content || '')).split(/\s+/).filter(Boolean);
+    if (words.length < 2 || maxHeightMm < 8) return null;
+
+    let fitWords = [];
+    for (const word of words) {
+      const candidateWords = [...fitWords, word];
+      const candidate = { ...paragraph, content: candidateWords.join(' ') };
+      if (calculatePageHeight([candidate]) <= maxHeightMm || fitWords.length === 0) {
+        fitWords = candidateWords;
+      } else {
+        break;
+      }
+    }
+
+    if (fitWords.length === 0 || fitWords.length >= words.length) return null;
+
+    return {
+      fit: {
+        ...paragraph,
+        id: `${paragraph.id || 'p'}_part_${Date.now()}_fit`,
+        content: fitWords.join(' ')
+      },
+      rest: {
+        ...paragraph,
+        id: `${paragraph.id || 'p'}_part_${Date.now()}_rest`,
+        content: words.slice(fitWords.length).join(' ')
+      }
+    };
+  };
+
   // Auto-paginate when content changes
   const autoRebalancePages = (updatedPages) => {
     const rebalanced = [];
     let currentPageParagraphs = [];
-    let currentHeight = 0;
-    let pageNumber = 1;
 
     // Flatten all paragraphs
     const allParagraphs = updatedPages.flatMap(page => page.paragraphs);
 
     for (const para of allParagraphs) {
-      const paraHeight = calculatePageHeight([para]);
-      
-      // Check if adding this paragraph would exceed capacity
-      if (currentHeight + paraHeight > REALISTIC_CONTENT_HEIGHT_MM && currentPageParagraphs.length > 0) {
-        // Save current page and start new one
-        rebalanced.push({
-          pageNumber: pageNumber++,
-          paragraphs: [...currentPageParagraphs]
-        });
-        currentPageParagraphs = [];
-        currentHeight = 0;
-      }
+      const queue = [para];
 
-      currentPageParagraphs.push(para);
-      currentHeight += paraHeight;
+      while (queue.length > 0) {
+        const block = queue.shift();
+        const candidateParagraphs = [...currentPageParagraphs, block];
+        const candidateHeight = calculatePageHeight(candidateParagraphs);
+
+        if (candidateHeight <= PAGE_PACKING_LIMIT_MM) {
+          currentPageParagraphs = candidateParagraphs;
+          continue;
+        }
+
+        const currentHeight = calculatePageHeight(currentPageParagraphs);
+        const remainingHeight = PAGE_PACKING_LIMIT_MM - currentHeight;
+        const split = splitParagraphIntoFitAndRest(block, remainingHeight);
+
+        if (split?.fit?.content && split?.rest?.content) {
+          currentPageParagraphs.push(split.fit);
+          rebalanced.push({ paragraphs: [...currentPageParagraphs] });
+          currentPageParagraphs = [];
+          queue.unshift(split.rest);
+          continue;
+        }
+
+        if (currentPageParagraphs.length > 0) {
+          rebalanced.push({ paragraphs: [...currentPageParagraphs] });
+          currentPageParagraphs = [];
+          queue.unshift(block);
+          continue;
+        }
+
+        const blockHeight = calculatePageHeight([block]);
+        const splitOversizedBlock = splitParagraphIntoFitAndRest(block, PAGE_PACKING_LIMIT_MM);
+
+        if (blockHeight > PAGE_PACKING_LIMIT_MM && splitOversizedBlock?.fit?.content && splitOversizedBlock?.rest?.content) {
+          rebalanced.push({ paragraphs: [splitOversizedBlock.fit] });
+          queue.unshift(splitOversizedBlock.rest);
+          continue;
+        }
+
+        currentPageParagraphs = [block];
+      }
     }
 
     // Add remaining paragraphs
     if (currentPageParagraphs.length > 0) {
-      rebalanced.push({
-        pageNumber: pageNumber,
-        paragraphs: currentPageParagraphs
-      });
+      rebalanced.push({ paragraphs: currentPageParagraphs });
     }
 
     // Ensure at least one page exists
@@ -233,7 +310,7 @@ function AdvancedEditor() {
       });
     }
 
-    return rebalanced;
+    return renumberPages(rebalanced);
   };
 
   const fetchOfferLetterData = useCallback(async () => {
@@ -425,26 +502,7 @@ function AdvancedEditor() {
     // Normal update without splitting
     const updatedPages = [...pages];
     updatedPages[currentPageIndex].paragraphs[paragraphIndex].content = value;
-    
-    // Check if current page is overflowing
-    const currentPageHeight = calculatePageHeight(updatedPages[currentPageIndex].paragraphs);
-    
-    if (currentPageHeight > REALISTIC_CONTENT_HEIGHT_MM * 1.1) {
-      // Trigger auto-rebalancing (10% overflow tolerance)
-      const rebalanced = autoRebalancePages(updatedPages);
-      setPages(rebalanced);
-      
-      // Try to keep user on the same page or adjust
-      if (currentPageIndex >= rebalanced.length) {
-        setCurrentPageIndex(rebalanced.length - 1);
-      }
-      
-      setNotificationMessage('Content rebalanced across pages');
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 2000);
-    } else {
-      setPages(updatedPages);
-    }
+    setPages(updatedPages);
   };
 
   const updateParagraphType = (paragraphIndex, newType) => {
@@ -868,7 +926,7 @@ function AdvancedEditor() {
             <button onClick={() => fileInputRef.current.click()} className="tool-btn">
               + Add Image
             </button>
-            <button onClick={manualRebalance} className="tool-btn rebalance-btn" title="Automatically redistribute content across pages">
+            <button onClick={manualRebalance} className="tool-btn rebalance-btn" title="Redistribute content across pages">
               ⚖️ Rebalance Pages
             </button>
             <input
@@ -908,7 +966,7 @@ function AdvancedEditor() {
             <div className="page-capacity-indicator">
               {(() => {
                 const currentHeight = calculatePageHeight(currentPage.paragraphs);
-                const percentage = (currentHeight / REALISTIC_CONTENT_HEIGHT_MM) * 100;
+                const percentage = (currentHeight / PAGE_PACKING_LIMIT_MM) * 100;
                 const isOverflow = percentage > 100;
                 const isNearFull = percentage > 85;
                 
@@ -924,7 +982,7 @@ function AdvancedEditor() {
                       />
                     </div>
                     <span className="capacity-text">
-                      {Math.round(percentage)}% full ({Math.round(currentHeight)}mm / {REALISTIC_CONTENT_HEIGHT_MM}mm)
+                      {Math.round(percentage)}% full ({Math.round(currentHeight)}mm / {PAGE_PACKING_LIMIT_MM}mm)
                     </span>
                   </div>
                 );
@@ -1024,7 +1082,11 @@ function AdvancedEditor() {
           {isContractMode ? (
             <div className="contract-editor-preview" aria-label="Contract preview">
               {pages.map((page, pageIndex) => (
-                <section key={page.pageNumber || pageIndex} className="contract-preview-page">
+                <section
+                  key={page.pageNumber || pageIndex}
+                  className="contract-preview-page"
+                  style={COMPANY_LETTERHEAD_STYLE}
+                >
                   <div className="contract-preview-page-number">Page {pageIndex + 1}</div>
                   {(page.paragraphs || []).map(renderContractPreviewParagraph)}
                 </section>

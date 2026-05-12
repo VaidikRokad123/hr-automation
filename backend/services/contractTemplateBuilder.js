@@ -52,6 +52,7 @@ export function buildEmploymentAgreementStructuredData(payload = {}) {
     const signatoryTitle = clean(payload.signatoryTitle, 'Chief Executive Officer');
 
     const paragraphs = [
+        { id: 'agreement-date', content: `Date: ${agreementDate}`, type: 'date' },
         { id: 'title', content: 'EMPLOYMENT AGREEMENT', type: 'subject' },
         { id: 'intro', content: `This Employment Agreement ("Agreement") is made and entered into on ${agreementDate} by and between ${companyName}, a company incorporated under the laws of India and having its registered office at ${companyOffice} (hereinafter referred to as the "Company"), and ${employeeName} (hereinafter referred to as the "Employee").`, type: 'paragraph' },
         { id: 'intent', content: 'The Company desires to employ the Employee, and the Employee agrees to accept employment with the Company, upon the terms and conditions set forth in this Agreement.', type: 'paragraph' },

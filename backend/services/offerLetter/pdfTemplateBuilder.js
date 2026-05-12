@@ -220,7 +220,7 @@ p{text-align:justify;margin:0;line-height:1.5;word-spacing: 0;letter-spacing: 0;
 
 .avoid-break{page-break-inside:avoid;break-inside:avoid;}
 
-.date{text-align:left;margin-left:125mm;margin-bottom:6mm;padding-bottom: 1mm;}
+.date{text-align:right;margin-left:0;margin-bottom:6mm;padding-bottom: 1mm;white-space:nowrap;}
 
 .subject{text-align:center;font-weight:700;margin-top:4mm;margin-bottom:4mm;padding-bottom: 1mm;}
 
