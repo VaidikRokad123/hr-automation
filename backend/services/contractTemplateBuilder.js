@@ -17,13 +17,130 @@ function buildSalaryText({ salaryType, salaryAmount }) {
     return amount.toLowerCase().startsWith('inr') ? amount : `INR ${amount}`;
 }
 
-function chunkParagraphs(paragraphs, size = 8) {
+const CONTRACT_PAGE_HEIGHT_MM = 297;
+const CONTRACT_TOP_PADDING_MM = 38;
+const CONTRACT_BOTTOM_PADDING_MM = 46;
+const CONTRACT_CONTENT_HEIGHT_MM = CONTRACT_PAGE_HEIGHT_MM - CONTRACT_TOP_PADDING_MM - CONTRACT_BOTTOM_PADDING_MM;
+const CONTRACT_CONTENT_WIDTH_MM = 210 - (25 * 2);
+const CONTRACT_FONT_SIZE_PT = 11;
+const CONTRACT_LINE_HEIGHT = 1.5;
+const CONTRACT_FONT_MM = CONTRACT_FONT_SIZE_PT * 0.352778;
+const CONTRACT_LINE_MM = CONTRACT_FONT_MM * CONTRACT_LINE_HEIGHT;
+const CONTRACT_PACKING_LIMIT_MM = CONTRACT_CONTENT_HEIGHT_MM - 3;
+
+function stripHtml(value = '') {
+    return String(value).replace(/<[^>]*>/g, ' ');
+}
+
+function estimateTextUnits(text = '') {
+    let units = 0;
+
+    for (const ch of text) {
+        if (ch === ' ') units += 0.33;
+        else if (/[ilI1\|\.,'`]/.test(ch)) units += 0.35;
+        else if (/[mwMW@#%&]/.test(ch)) units += 0.9;
+        else if (/[A-Z]/.test(ch)) units += 0.68;
+        else if (/[0-9]/.test(ch)) units += 0.56;
+        else units += 0.55;
+    }
+
+    return units;
+}
+
+function estimateWrappedLineCount(text = '') {
+    const plain = stripHtml(text).replace(/\s+/g, ' ').trim();
+    if (!plain) return 1;
+
+    const unitWidthMm = CONTRACT_FONT_MM * 0.48;
+    const maxUnitsPerLine = Math.max(1, CONTRACT_CONTENT_WIDTH_MM / unitWidthMm);
+    const words = plain.split(' ');
+    let lines = 1;
+    let currentUnits = 0;
+
+    for (const word of words) {
+        const wordUnits = estimateTextUnits(word);
+        const nextUnits = currentUnits === 0 ? wordUnits : wordUnits + 0.33;
+
+        if (nextUnits > maxUnitsPerLine) {
+            const forcedLines = Math.max(1, Math.ceil(wordUnits / maxUnitsPerLine));
+            lines += forcedLines - (currentUnits === 0 ? 0 : 1);
+            currentUnits = wordUnits % maxUnitsPerLine;
+            continue;
+        }
+
+        if (currentUnits + nextUnits > maxUnitsPerLine) {
+            lines += 1;
+            currentUnits = wordUnits;
+        } else {
+            currentUnits += nextUnits;
+        }
+    }
+
+    return Math.max(1, lines);
+}
+
+function estimateContractBlockHeightMm(paragraph) {
+    const content = paragraph?.content || '';
+    const lineCount = estimateWrappedLineCount(content);
+
+    switch (paragraph?.type) {
+        case 'date':
+            return CONTRACT_LINE_MM + 7;
+        case 'subject':
+            return CONTRACT_LINE_MM + 9;
+        case 'signature': {
+            const explicitLines = Math.max(1, String(content).split(/<br\s*\/?>|\n/i).length);
+            return (explicitLines * CONTRACT_LINE_MM) + 13;
+        }
+        case 'footer':
+            return (lineCount * CONTRACT_LINE_MM) + 5;
+        case 'image':
+            return 65;
+        case 'company':
+        case 'separator':
+            return CONTRACT_LINE_MM + 10;
+        case 'to':
+            return (Math.max(1, String(content).split(/<br\s*\/?>|\n/i).length) * CONTRACT_LINE_MM) + 5;
+        default:
+            return (lineCount * CONTRACT_LINE_MM) + 5;
+    }
+}
+
+function shouldKeepWithNext(paragraph, nextParagraph) {
+    return paragraph?.type === 'subject' && nextParagraph?.type === 'paragraph';
+}
+
+function paginateContractParagraphs(paragraphs) {
     const pages = [];
-    for (let index = 0; index < paragraphs.length; index += size) {
-        pages.push({
-            pageNumber: pages.length + 1,
-            paragraphs: paragraphs.slice(index, index + size)
-        });
+    let currentParagraphs = [];
+    let currentHeight = 0;
+
+    for (let index = 0; index < paragraphs.length; index += 1) {
+        const paragraph = paragraphs[index];
+        const nextParagraph = paragraphs[index + 1];
+        const blockHeight = estimateContractBlockHeightMm(paragraph);
+        const keepWithNextHeight = shouldKeepWithNext(paragraph, nextParagraph)
+            ? blockHeight + estimateContractBlockHeightMm(nextParagraph)
+            : blockHeight;
+
+        if (currentParagraphs.length > 0 && currentHeight + keepWithNextHeight > CONTRACT_PACKING_LIMIT_MM) {
+            pages.push({ pageNumber: pages.length + 1, paragraphs: currentParagraphs });
+            currentParagraphs = [];
+            currentHeight = 0;
+        }
+
+        if (currentParagraphs.length > 0 && currentHeight + blockHeight > CONTRACT_PACKING_LIMIT_MM) {
+            pages.push({ pageNumber: pages.length + 1, paragraphs: currentParagraphs });
+            currentParagraphs = [];
+            currentHeight = 0;
+        }
+
+        currentParagraphs.push(paragraph);
+        currentHeight += blockHeight;
+    }
+
+    if (currentParagraphs.length > 0) {
+        pages.push({ pageNumber: pages.length + 1, paragraphs: currentParagraphs });
     }
 
     return pages;
@@ -145,6 +262,6 @@ export function buildEmploymentAgreementStructuredData(payload = {}) {
             signatoryName,
             signatoryTitle
         },
-        pages: chunkParagraphs(paragraphs)
+        pages: paginateContractParagraphs(paragraphs)
     };
 }

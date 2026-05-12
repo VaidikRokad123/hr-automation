@@ -103,22 +103,22 @@ function OfferLetter() {
   }
 
   return (
-    <div className="OfferLetterContainer">
+    <div className="OfferLetterContainer page-grid">
       {showNotification && (
         <div className="notification-popup">
           ✓ Offer letter generated successfully!
         </div>
       )}
 
-      <div className="FormSection">
+      <div className="FormSection page-card form-stack">
         <h2>Offer Letter Generator</h2>
 
-        <div className="form-group">
+        <div className="form-group form-field">
           <label>Name</label>
-          <input type="text" placeholder='Enter name' value={name} onChange={(e) => setName(e.target.value)} />
+          <input className="form-control" type="text" placeholder='Enter name' value={name} onChange={(e) => setName(e.target.value)} />
         </div>
 
-        <div className="form-group">
+        <div className="form-group form-field">
           <label>Gender</label>
           <div className="radio-group">
             <label>
@@ -132,7 +132,7 @@ function OfferLetter() {
           </div>
         </div>
 
-        <div className="form-group">
+        <div className="form-group form-field">
           <label>Job Type</label>
           <div className="radio-group">
             <label>
@@ -150,7 +150,7 @@ function OfferLetter() {
           </div>
         </div>
 
-        <div className="form-group">
+        <div className="form-group form-field">
           <label>Duration Type</label>
           <div className="radio-group">
             <label>
@@ -164,27 +164,27 @@ function OfferLetter() {
           </div>
         </div>
 
-        <div className="form-group">
+        <div className="form-group form-field">
           <label>Duration</label>
-          <input type="number" placeholder='e.g. 2' value={duration} onChange={(e) => setDuration(e.target.value)} />
+          <input className="form-control" type="number" placeholder='e.g. 2' value={duration} onChange={(e) => setDuration(e.target.value)} />
         </div>
 
-        <div className="form-group">
+        <div className="form-group form-field">
           <label>Role</label>
-          <input type="text" placeholder='Enter role' value={role} onChange={(e) => setRole(e.target.value)} />
+          <input className="form-control" type="text" placeholder='Enter role' value={role} onChange={(e) => setRole(e.target.value)} />
         </div>
 
-        <div className="form-group">
+        <div className="form-group form-field">
           <label>Start Date</label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          <input className="form-control" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
         </div>
 
-        <div className="form-group">
+        <div className="form-group form-field">
           <label>End Date</label>
-          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          <input className="form-control" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
         </div>
 
-        <div className="form-group">
+        <div className="form-group form-field">
           <label>Salary Type</label>
           <div className="radio-group">
             <label>
@@ -199,32 +199,32 @@ function OfferLetter() {
         </div>
 
         {salaryType === "paid" && (
-          <div className="form-group">
+          <div className="form-group form-field">
             <label>Salary Amount</label>
-            <input type="text" placeholder='Enter salary amount' value={salaryAmount} onChange={(e) => setSalaryAmount(e.target.value)} />
+            <input className="form-control" type="text" placeholder='Enter salary amount' value={salaryAmount} onChange={(e) => setSalaryAmount(e.target.value)} />
           </div>
         )}
 
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="page-error">{error}</div>}
 
-        <button onClick={() => generateOfferLetter()} disabled={loading} className="generate-btn">
+        <button onClick={() => generateOfferLetter()} disabled={loading} className="page-button generate-btn">
           {loading ? 'Generating...' : 'Generate Offer Letter'}
         </button>
 
-        <button onClick={() => generateContract()} disabled={contractLoading} className="generate-btn">
+        <button onClick={() => generateContract()} disabled={contractLoading} className="page-button-secondary generate-btn">
           {contractLoading ? 'Generating Contract...' : 'Generate Contract'}
         </button>
 
-        <button onClick={() => openAdvancedEditor()} className="advanced-btn">
+        <button onClick={() => openAdvancedEditor()} className="page-button-secondary advanced-btn">
           Advanced Edit
         </button>
 
-        <button onClick={() => downloadPDF()} className="download-btn">
+        <button onClick={() => downloadPDF()} className="page-button-secondary download-btn">
           Download PDF
         </button>
       </div>
 
-      <div className="PreviewSection">
+      <div className="PreviewSection page-card">
         <h2>PDF Preview</h2>
         {pdfPath ? (
           <iframe

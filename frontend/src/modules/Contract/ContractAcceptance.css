@@ -111,54 +111,41 @@
 
 .contract-viewer-wrap {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
   width: min(1240px, calc(100% - 32px));
-  margin: 24px auto 140px;
+  margin: 24px auto 0;
   user-select: none;
-}
-
-.contract-section-nav {
-  position: sticky;
-  top: 96px;
-  align-self: start;
-  display: grid;
-  gap: 8px;
-  padding: 16px;
-  border: 1px solid #d9e2ec;
-  border-radius: 8px;
-  background: #ffffff;
-}
-
-.contract-section-nav h2 {
-  margin: 0 0 8px;
-  font-size: 1rem;
-}
-
-.contract-section-nav a {
-  padding: 9px 10px;
-  border-radius: 6px;
-  color: #52606d;
-  text-decoration: none;
-}
-
-.contract-section-nav a.viewed {
-  background: #e6f6ee;
-  color: #147d64;
-  font-weight: 700;
 }
 
 .contract-pages {
   display: grid;
-  gap: 24px;
+  gap: 18px;
+}
+
+.contract-page-controls {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  margin-top: 18px;
+}
+
+.contract-page-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 0;
 }
 
 .contract-page {
   position: relative;
-  width: min(100%, 210mm);
+  width: min(100%, 920px);
   min-height: 297mm;
   margin: 0 auto;
-  padding: 38mm 25mm 32mm;
+  padding: 38mm 25mm 46mm;
   box-sizing: border-box;
   background: #ffffff;
   background-position: center top;
@@ -174,9 +161,38 @@
 .contract-page-number {
   position: absolute;
   right: 18mm;
-  bottom: 10mm;
+  bottom: 24mm;
   color: #9fb3c8;
   font-size: 9pt;
+}
+
+.contract-page-chip {
+  border: 1px solid #bcccdc;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  color: #52606d;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.contract-page-chip.visited {
+  background: #e8f6ee;
+  border-color: #b9e2c6;
+  color: #147d64;
+}
+
+.contract-page-chip.unvisited {
+  background: #f1f5f9;
+  border-color: #d9e2ec;
+  color: #7b8794;
+}
+
+.contract-page-chip.current {
+  background: #1f4e79;
+  border-color: #1f4e79;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(31, 78, 121, 0.18);
 }
 
 .contract-viewer-date {
@@ -273,19 +289,45 @@
 }
 
 .contract-acceptance-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 50;
   display: grid;
-  grid-template-columns: minmax(160px, 220px) minmax(0, 1fr) minmax(180px, 260px) auto;
+  grid-template-columns: 1fr;
   gap: 14px;
-  align-items: center;
-  padding: 14px 22px;
+  align-items: stretch;
+  width: min(100%, 920px);
+  margin: 18px auto 24px;
+  padding: 18px;
   border-top: 1px solid #bcccdc;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 -14px 36px rgba(15, 23, 42, 0.12);
+}
+
+.contract-signature-box {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.contract-signature-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.contract-signature-canvas {
+  width: 100%;
+  height: 260px;
+  border: 1px solid #bcccdc;
+  border-radius: 12px;
+  background: #fff;
+  touch-action: none;
+}
+
+.contract-signature-help {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #52606d;
 }
 
 .contract-checkboxes {
@@ -311,19 +353,9 @@
     grid-template-columns: 1fr;
   }
 
-  .contract-section-nav {
-    position: relative;
-    top: 0;
-    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  }
-
-  .contract-section-nav h2 {
-    grid-column: 1 / -1;
-  }
-
   .contract-page {
     min-height: auto;
-    padding: 68px 24px 48px;
+    padding: 68px 24px 72px;
   }
 
   .contract-viewer-date {
@@ -333,6 +365,10 @@
   }
 
   .contract-acceptance-bar {
+    width: 100%;
+  }
+
+  .contract-page-controls {
     grid-template-columns: 1fr;
   }
 }

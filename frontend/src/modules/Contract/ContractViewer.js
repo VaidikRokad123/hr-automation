@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import './ContractAcceptance.css';
 import { sanitizeHtml } from '../../utils/safeHtml';
 
@@ -64,9 +64,10 @@ export default function ContractViewer({
     workerEmail,
     contractId,
     viewedSections,
-    onViewedSectionsChange
+    onViewedSectionsChange,
+    currentPageIndex = 0,
+    onPageIndexChange
 }) {
-    const pageRefs = useRef({});
     const requiredPageIds = useMemo(
         () => (pagesData || []).map((page, index) => getPageId(page, index)),
         [pagesData]
@@ -91,114 +92,21 @@ export default function ContractViewer({
     }, [onViewedSectionsChange]);
 
     useEffect(() => {
-        const handleContextMenu = (event) => event.preventDefault();
-        const handleKeyDown = (event) => {
-            const key = event.key?.toLowerCase();
-            const blockedCtrl = event.ctrlKey && ['p', 's', 'u', 'c'].includes(key);
-            const blockedInspect = event.key === 'F12' || (event.ctrlKey && event.shiftKey && ['i', 'j', 'c'].includes(key));
+        if (!requiredPageIds.length) return;
+        markPagesViewed([requiredPageIds[currentPageIndex]]);
+    }, [currentPageIndex, markPagesViewed, requiredPageIds]);
 
-            if (blockedCtrl || blockedInspect) {
-                event.preventDefault();
-            }
-        };
-
-        document.addEventListener('contextmenu', handleContextMenu);
-        window.addEventListener('keydown', handleKeyDown);
-
-        return () => {
-            document.removeEventListener('contextmenu', handleContextMenu);
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, []);
+    const visiblePage = (pagesData || [])[currentPageIndex];
 
     useEffect(() => {
-        if (!requiredPageIds.length) return undefined;
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const newlyViewed = [];
-
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting && entry.intersectionRatio >= 0.25) {
-                        const pageId = entry.target.dataset.pageId;
-                        if (pageId) newlyViewed.push(pageId);
-                    }
-                });
-
-                markPagesViewed(newlyViewed);
-            },
-            { threshold: [0.25, 0.5, 0.75, 1] }
-        );
-
-        Object.values(pageRefs.current).forEach((element) => {
-            if (element) observer.observe(element);
-        });
-
-        let animationFrame = 0;
-        const checkVisiblePages = () => {
-            animationFrame = 0;
-            const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-            const newlyViewed = [];
-
-            Object.values(pageRefs.current).forEach((element) => {
-                if (!element) return;
-
-                const rect = element.getBoundingClientRect();
-                const visibleHeight = Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0);
-                const hasEnoughVisibleArea = visibleHeight >= Math.min(rect.height * 0.25, 180);
-                const viewportCenterIsInsidePage = rect.top <= viewportHeight / 2 && rect.bottom >= viewportHeight / 2;
-
-                if (hasEnoughVisibleArea || viewportCenterIsInsidePage) {
-                    newlyViewed.push(element.dataset.pageId);
-                }
-            });
-
-            markPagesViewed(newlyViewed);
-        };
-
-        const scheduleVisiblePageCheck = () => {
-            if (animationFrame) return;
-            animationFrame = window.requestAnimationFrame(checkVisiblePages);
-        };
-
-        scheduleVisiblePageCheck();
-        window.addEventListener('scroll', scheduleVisiblePageCheck, { passive: true });
-        window.addEventListener('resize', scheduleVisiblePageCheck);
-
-        return () => {
-            observer.disconnect();
-            window.removeEventListener('scroll', scheduleVisiblePageCheck);
-            window.removeEventListener('resize', scheduleVisiblePageCheck);
-            if (animationFrame) {
-                window.cancelAnimationFrame(animationFrame);
-            }
-        };
-    }, [markPagesViewed, requiredPageIds]);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [currentPageIndex]);
 
     return (
         <div className="contract-viewer-wrap">
-            <div className="contract-watermark" aria-hidden="true">
-                {Array.from({ length: 28 }).map((_, index) => (
-                    <span key={index}>Confidential - {workerName} - {workerEmail}</span>
-                ))}
-            </div>
-
-            <aside className="contract-section-nav">
-                <h2>Pages</h2>
-                {requiredPageIds.map((pageId, index) => (
-                    <a
-                        key={pageId}
-                        href={`#${pageId}`}
-                        className={viewedSections.has(pageId) ? 'viewed' : ''}
-                    >
-                        Page {index + 1}
-                    </a>
-                ))}
-            </aside>
-
             <main className="contract-pages" aria-label="Contract document">
-                {(pagesData || []).map((page, pageIndex) => {
-                    const pageId = getPageId(page, pageIndex);
+                {visiblePage ? (() => {
+                    const pageId = getPageId(visiblePage, currentPageIndex);
 
                     return (
                         <section
@@ -207,12 +115,9 @@ export default function ContractViewer({
                             data-page-id={pageId}
                             className="contract-page"
                             style={COMPANY_LETTERHEAD_STYLE}
-                            ref={(element) => {
-                                pageRefs.current[pageId] = element;
-                            }}
                         >
-                            <div className="contract-page-number">Page {pageIndex + 1}</div>
-                            {(page.paragraphs || []).map((paragraph, paragraphIndex) => (
+                            <div className="contract-page-number">Page {currentPageIndex + 1}</div>
+                            {(visiblePage.paragraphs || []).map((paragraph, paragraphIndex) => (
                                 <ContractParagraph
                                     key={paragraph.id || `${pageId}-${paragraphIndex}`}
                                     paragraph={paragraph}
@@ -220,8 +125,44 @@ export default function ContractViewer({
                             ))}
                         </section>
                     );
-                })}
+                })() : null}
                 <div className="contract-id-note">Contract ID: {contractId}</div>
+                <div className="contract-page-controls page-card">
+                    <button
+                        type="button"
+                        className="page-button-secondary contract-secondary-btn"
+                        onClick={() => onPageIndexChange?.(Math.max(0, currentPageIndex - 1))}
+                        disabled={currentPageIndex === 0}
+                    >
+                        Previous
+                    </button>
+
+                    <div className="contract-page-strip" aria-label="Contract pages">
+                        {requiredPageIds.map((pageId, index) => {
+                            const isCurrent = index === currentPageIndex;
+                            const isVisited = viewedSections.has(pageId);
+                            return (
+                                <button
+                                    key={pageId}
+                                    type="button"
+                                    className={`contract-page-chip ${isCurrent ? 'current' : isVisited ? 'visited' : 'unvisited'}`}
+                                    onClick={() => onPageIndexChange?.(index)}
+                                >
+                                    Page {index + 1}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <button
+                        type="button"
+                        className="page-button-secondary contract-secondary-btn"
+                        onClick={() => onPageIndexChange?.(Math.min(requiredPageIds.length - 1, currentPageIndex + 1))}
+                        disabled={currentPageIndex >= requiredPageIds.length - 1}
+                    >
+                        Next
+                    </button>
+                </div>
             </main>
         </div>
     );

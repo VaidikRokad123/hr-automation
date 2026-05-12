@@ -310,11 +310,12 @@
 }
 
 .editor-toolbar {
-  padding: 20px;
+  padding: 18px 20px;
   border-bottom: 1px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
 }
 
 .editor-toolbar h2 {
@@ -333,7 +334,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  min-width: 250px;
+  min-width: 220px;
+  max-width: 280px;
 }
 
 .capacity-wrapper {
@@ -365,7 +367,7 @@
 }
 
 .capacity-bar {
-  width: 200px;
+  width: min(200px, 100%);
   height: 8px;
   background: #e2e8f0;
   border-radius: 4px;
@@ -426,11 +428,11 @@
 }
 
 .paragraph-header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  margin-bottom: 10px;
-  gap: 10px;
+  margin-bottom: 12px;
+  gap: 12px;
 }
 
 .paragraph-info {
@@ -438,6 +440,7 @@
   align-items: center;
   gap: 10px;
   flex: 1;
+  min-width: 0;
 }
 
 .paragraph-header label {
@@ -472,6 +475,8 @@
   display: flex;
   gap: 5px;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .move-btn {
@@ -932,7 +937,7 @@
 .AdvancedEditor .capacity-label {
   background: #31506d;
 }
-
+  min-height: 520px;
 .AdvancedEditor .capacity-fill.warning,
 .AdvancedEditor .capacity-label.warning {
   background: #b7791f;
@@ -941,7 +946,7 @@
 
 .AdvancedEditor .capacity-fill.overflow,
 .AdvancedEditor .capacity-label.overflow {
-  background: #b91c1c;
+  min-height: 520px;
   color: #b91c1c;
 }
 
@@ -951,23 +956,24 @@
 }
 
 @media (max-width: 1200px) {
-  .AdvancedEditor .editor-container {
+  width: min(100%, 380px);
     flex-direction: column;
   }
-}
+  padding: 72px 44px 88px;
 
 .AdvancedEditor {
   min-height: 100vh;
   position: relative;
   display: flex;
-  flex-direction: column;
-  color: var(--text);
+  right: 16px;
+  bottom: 44px;
   background: var(--bg);
 }
 
 .AdvancedEditor .notification-popup {
   position: fixed;
   bottom: 20px;
+  word-break: break-word;
   right: 20px;
   z-index: 1000;
   padding: 14px 18px;
@@ -978,6 +984,14 @@
   border: 1px solid rgba(52, 211, 153, 0.3);
   box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 20px rgba(52, 211, 153, 0.1);
 }
+
+  .AdvancedEditor .paragraph-header {
+    grid-template-columns: 1fr;
+  }
+
+  .AdvancedEditor .paragraph-actions {
+    justify-content: flex-start;
+  }
 
 .AdvancedEditor .loading-container,
 .AdvancedEditor .error-container {
@@ -1405,7 +1419,7 @@
 .AdvancedEditor .pdf-preview {
   flex: 1;
   width: 100%;
-  min-height: 620px;
+  min-height: 520px;
   border-radius: 20px;
   border: 1px solid var(--line-strong);
   background: #fff;
@@ -1413,7 +1427,7 @@
 
 .AdvancedEditor .contract-editor-preview {
   flex: 1;
-  min-height: 620px;
+  min-height: 520px;
   overflow: auto;
   padding: 18px;
   border-radius: 20px;
@@ -1423,10 +1437,10 @@
 
 .AdvancedEditor .contract-preview-page {
   position: relative;
-  width: min(100%, 420px);
+  width: min(100%, 380px);
   min-height: 594px;
   margin: 0 auto 18px;
-  padding: 76px 50px 64px;
+  padding: 72px 44px 88px;
   background: #ffffff;
   background-position: center top;
   background-repeat: no-repeat;
@@ -1441,14 +1455,15 @@
 
 .AdvancedEditor .contract-preview-page-number {
   position: absolute;
-  right: 18px;
-  bottom: 12px;
+  right: 16px;
+  bottom: 44px;
   color: #64748b;
   font-size: 9px;
 }
 
 .AdvancedEditor .contract-preview-text {
   margin-bottom: 10px;
+  word-break: break-word;
 }
 
 .AdvancedEditor .contract-preview-text p {

@@ -38,7 +38,7 @@ function AdvancedEditor() {
   const SIDE_PADDING_MM = 25;
   const BOTTOM_SAFE_MM = 28;
   const CONTRACT_TOP_PADDING_MM = 38;
-  const CONTRACT_BOTTOM_SAFE_MM = 32;
+  const CONTRACT_BOTTOM_SAFE_MM = 46;
   const ACTIVE_TOP_PADDING_MM = isContractMode ? CONTRACT_TOP_PADDING_MM : TOP_PADDING_MM;
   const ACTIVE_BOTTOM_SAFE_MM = isContractMode ? CONTRACT_BOTTOM_SAFE_MM : BOTTOM_SAFE_MM;
   const REALISTIC_CONTENT_HEIGHT_MM = PAGE_HEIGHT_MM - ACTIVE_TOP_PADDING_MM - ACTIVE_BOTTOM_SAFE_MM;
@@ -330,7 +330,7 @@ function AdvancedEditor() {
       }
 
       const response = await apiClient.get('/api/offerletter/data');
-      
+
       if (response.data.success) {
         const { pages: backendPages, metadata: backendMetadata } = response.data.data;
 
@@ -354,7 +354,7 @@ function AdvancedEditor() {
           setPages(backendPages);
           setMetadata(backendMetadata);
         }
-        
+
         // Update PDF URL if available
         if (location.state?.pdfUrl) {
           setPdfUrl(location.state.pdfUrl);
@@ -414,7 +414,7 @@ function AdvancedEditor() {
     };
     setPages([...pages, newPage]);
     setCurrentPageIndex(pages.length);
-    
+
     setNotificationMessage('New page added');
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 2000);
@@ -438,7 +438,7 @@ function AdvancedEditor() {
     } else if (currentPageIndex > pageIndex) {
       setCurrentPageIndex(currentPageIndex - 1);
     }
-    
+
     setNotificationMessage('Page deleted');
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 2000);
@@ -453,7 +453,7 @@ function AdvancedEditor() {
     };
     updatedPages[currentPageIndex].paragraphs.push(newParagraph);
     setPages(updatedPages);
-    
+
     setNotificationMessage('Paragraph added');
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 2000);
@@ -462,25 +462,25 @@ function AdvancedEditor() {
   const updateParagraph = (paragraphIndex, value) => {
     // Check if the value contains newlines (multiple paragraphs)
     const hasNewlines = value.includes('\n\n') || value.includes('\r\n\r\n');
-    
+
     if (hasNewlines) {
       // Split by double newlines to separate paragraphs
       const splitParagraphs = value
         .split(/\n\n+|\r\n\r\n+/)
         .map(text => text.trim())
         .filter(text => text.length > 0);
-      
+
       if (splitParagraphs.length > 1) {
         // User pasted multiple paragraphs - split them
         const updatedPages = [...pages];
         const currentPara = updatedPages[currentPageIndex].paragraphs[paragraphIndex];
-        
+
         // Replace current paragraph with first split
         updatedPages[currentPageIndex].paragraphs[paragraphIndex] = {
           ...currentPara,
           content: splitParagraphs[0]
         };
-        
+
         // Insert remaining splits as new paragraphs after current one
         for (let i = 1; i < splitParagraphs.length; i++) {
           const newPara = {
@@ -490,7 +490,7 @@ function AdvancedEditor() {
           };
           updatedPages[currentPageIndex].paragraphs.splice(paragraphIndex + i, 0, newPara);
         }
-        
+
         setPages(updatedPages);
         setNotificationMessage(`Split into ${splitParagraphs.length} paragraphs`);
         setShowNotification(true);
@@ -498,7 +498,7 @@ function AdvancedEditor() {
         return;
       }
     }
-    
+
     // Normal update without splitting
     const updatedPages = [...pages];
     updatedPages[currentPageIndex].paragraphs[paragraphIndex].content = value;
@@ -522,7 +522,7 @@ function AdvancedEditor() {
     const updatedPages = [...pages];
     updatedPages[currentPageIndex].paragraphs = currentPage.paragraphs.filter((_, index) => index !== paragraphIndex);
     setPages(updatedPages);
-    
+
     setNotificationMessage('Paragraph deleted');
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 2000);
@@ -532,28 +532,28 @@ function AdvancedEditor() {
   const splitParagraph = (paragraphIndex) => {
     const currentPara = pages[currentPageIndex].paragraphs[paragraphIndex];
     const content = currentPara.content || '';
-    
+
     // Split by single or double newlines
     const splitParagraphs = content
       .split(/\n+/)
       .map(text => text.trim())
       .filter(text => text.length > 0);
-    
+
     if (splitParagraphs.length <= 1) {
       setNotificationMessage('No newlines found to split');
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 2000);
       return;
     }
-    
+
     const updatedPages = [...pages];
-    
+
     // Replace current paragraph with first split
     updatedPages[currentPageIndex].paragraphs[paragraphIndex] = {
       ...currentPara,
       content: splitParagraphs[0]
     };
-    
+
     // Insert remaining splits as new paragraphs after current one
     for (let i = 1; i < splitParagraphs.length; i++) {
       const newPara = {
@@ -563,7 +563,7 @@ function AdvancedEditor() {
       };
       updatedPages[currentPageIndex].paragraphs.splice(paragraphIndex + i, 0, newPara);
     }
-    
+
     setPages(updatedPages);
     setNotificationMessage(`Split into ${splitParagraphs.length} paragraphs`);
     setShowNotification(true);
@@ -579,11 +579,11 @@ function AdvancedEditor() {
     }
     const updatedPages = [...pages];
     const paragraphs = updatedPages[currentPageIndex].paragraphs;
-    
+
     // Swap with previous paragraph
-    [paragraphs[paragraphIndex - 1], paragraphs[paragraphIndex]] = 
-    [paragraphs[paragraphIndex], paragraphs[paragraphIndex - 1]];
-    
+    [paragraphs[paragraphIndex - 1], paragraphs[paragraphIndex]] =
+      [paragraphs[paragraphIndex], paragraphs[paragraphIndex - 1]];
+
     setPages(updatedPages);
   };
 
@@ -597,11 +597,11 @@ function AdvancedEditor() {
     }
     const updatedPages = [...pages];
     const paragraphs = updatedPages[currentPageIndex].paragraphs;
-    
+
     // Swap with next paragraph
-    [paragraphs[paragraphIndex], paragraphs[paragraphIndex + 1]] = 
-    [paragraphs[paragraphIndex + 1], paragraphs[paragraphIndex]];
-    
+    [paragraphs[paragraphIndex], paragraphs[paragraphIndex + 1]] =
+      [paragraphs[paragraphIndex + 1], paragraphs[paragraphIndex]];
+
     setPages(updatedPages);
   };
 
@@ -609,12 +609,12 @@ function AdvancedEditor() {
   const manualRebalance = () => {
     const rebalanced = autoRebalancePages(pages);
     setPages(rebalanced);
-    
+
     // Adjust current page index if needed
     if (currentPageIndex >= rebalanced.length) {
       setCurrentPageIndex(rebalanced.length - 1);
     }
-    
+
     setNotificationMessage(`Content rebalanced into ${rebalanced.length} page${rebalanced.length > 1 ? 's' : ''}`);
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 3000);
@@ -659,7 +659,7 @@ function AdvancedEditor() {
         // Add timestamp to force iframe reload
         const newPdfUrl = response.data.path + '?t=' + Date.now();
         setPdfUrl(newPdfUrl);
-        
+
         setNotificationMessage('PDF compiled successfully!');
         setShowNotification(true);
         setTimeout(() => setShowNotification(false), 3000);
@@ -667,7 +667,7 @@ function AdvancedEditor() {
     } catch (err) {
       console.error('Error compiling PDF:', err);
       setError('Failed to compile PDF. Please try again.');
-      
+
       setNotificationMessage('Failed to compile PDF');
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 3000);
@@ -748,7 +748,7 @@ function AdvancedEditor() {
     // Remove query parameters and open in new tab
     const cleanUrl = pdfUrl.split('?')[0];
     window.open(cleanUrl, "_blank");
-    
+
     setNotificationMessage('PDF opened in new tab');
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 2000);
@@ -766,21 +766,21 @@ function AdvancedEditor() {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const currentContent = currentPage.paragraphs[paragraphIndex].content;
-    
-    const newContent = 
-      currentContent.substring(0, start) + 
-      variable + 
+
+    const newContent =
+      currentContent.substring(0, start) +
+      variable +
       currentContent.substring(end);
-    
+
     updateParagraph(paragraphIndex, newContent);
-    
+
     // Set cursor position after inserted text
     setTimeout(() => {
       textarea.focus();
       const newPosition = start + variable.length;
       textarea.setSelectionRange(newPosition, newPosition);
     }, 0);
-    
+
     setNotificationMessage(`Inserted ${variable}`);
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 1500);
@@ -791,7 +791,7 @@ function AdvancedEditor() {
     if (lastFocusedTextarea.current) {
       const key = lastFocusedTextarea.current;
       const [pageIdx, paraIdx] = key.split('-').map(Number);
-      
+
       if (pageIdx === currentPageIndex) {
         insertAtCursor(paraIdx, variable.value);
       } else {
@@ -969,14 +969,14 @@ function AdvancedEditor() {
                 const percentage = (currentHeight / PAGE_PACKING_LIMIT_MM) * 100;
                 const isOverflow = percentage > 100;
                 const isNearFull = percentage > 85;
-                
+
                 return (
                   <div className="capacity-wrapper">
                     <span className={`capacity-label ${isOverflow ? 'overflow' : isNearFull ? 'warning' : ''}`}>
                       {isOverflow ? '⚠️ Page Overflow!' : isNearFull ? '⚠️ Near Full' : '✓ Page OK'}
                     </span>
                     <div className="capacity-bar">
-                      <div 
+                      <div
                         className={`capacity-fill ${isOverflow ? 'overflow' : isNearFull ? 'warning' : ''}`}
                         style={{ width: `${Math.min(100, percentage)}%` }}
                       />
@@ -1049,7 +1049,7 @@ function AdvancedEditor() {
                     </button>
                   </div>
                 </div>
-                
+
                 {para.type === 'image' ? (
                   <div className="image-preview">
                     <img src={para.content} alt={para.alt || 'Uploaded'} />

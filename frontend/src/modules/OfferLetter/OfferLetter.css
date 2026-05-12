@@ -65,7 +65,7 @@
   color: var(--text);
   text-align: center;
   margin-bottom: 24px;
-  font-size: 1.35rem;
+  font-size: 1.55rem;
   font-family: 'Manrope', sans-serif;
 }
 
@@ -184,7 +184,7 @@
   flex: 1;
   border: 1px solid #d6dbe1;
   border-radius: 14px;
-  min-height: 560px;
+  min-height: 460px;
   background: #fff;
 }
 
@@ -233,7 +233,7 @@
 
 .OfferLetterContainer {
   display: grid;
-  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+  grid-template-columns: minmax(420px, 500px) minmax(0, 1fr);
   gap: 18px;
   width: 100%;
   min-height: 680px;
@@ -283,17 +283,17 @@
   top: 18px;
   max-height: calc(100vh - 44px);
   overflow: auto;
-  padding: 24px;
+  padding: 28px;
   display: grid;
-  gap: 16px;
+  gap: 18px;
 }
 
 .PreviewSection {
   min-height: 100%;
-  padding: 24px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .FormSection h2,
@@ -301,7 +301,7 @@
   text-align: left;
   margin-bottom: 6px;
   color: var(--text);
-  font-size: 2.1rem;
+  font-size: 2.3rem;
 }
 
 .form-group {
@@ -320,7 +320,7 @@
 .form-group input[type='number'],
 .form-group input[type='date'] {
   width: 100%;
-  padding: 13px 15px;
+  padding: 14px 16px;
   border: 1px solid rgba(19, 34, 53, 0.14);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.9);
@@ -370,7 +370,7 @@
 
 .FormSection button {
   width: 100%;
-  padding: 13px 16px;
+  padding: 14px 16px;
   border-radius: 14px;
 }
 
@@ -493,6 +493,7 @@
 .OfferLetterContainer .pdf-viewer {
   border-color: var(--line-strong);
   background: #fff;
+  min-height: 470px;
 }
 
 .OfferLetterContainer .no-preview {
@@ -525,7 +526,7 @@
   }
   .pdf-viewer,
   .no-preview {
-    min-height: 540px;
+    min-height: 520px;
   }
 }
 

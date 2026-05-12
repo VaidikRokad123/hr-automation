@@ -92,7 +92,7 @@ export default function DashboardPage() {
     ].filter((item) => item.available);
 
     return (
-        <div className="dashboard-shell">
+        <div className="dashboard-shell app-page">
             {broadcastOpen && <BroadcastModal onClose={() => setBroadcastOpen(false)} />}
             {contractPickerOpen && (
                 <div className="modal-backdrop">
@@ -135,7 +135,7 @@ export default function DashboardPage() {
                 </div>
             )}
 
-            <header className="dashboard-header">
+            <header className="dashboard-header page-header">
                 <div>
                     <p className="eyebrow">Operational console</p>
                     <h1>{user?.name}</h1>
@@ -146,19 +146,19 @@ export default function DashboardPage() {
                         <button
                             id="open-broadcast-btn"
                             type="button"
-                            className="ghost-btn broadcast-trigger-btn"
+                            className="page-button-secondary broadcast-trigger-btn"
                             onClick={() => setBroadcastOpen(true)}
                         >
                             📢 Send Notification
                         </button>
                     )}
                     <NotificationBell />
-                    <button type="button" className="logout-btn" onClick={handleLogout}>Logout</button>
+                    <button type="button" className="page-button" onClick={handleLogout}>Logout</button>
                 </div>
             </header>
 
-            <section className="dashboard-home">
-                <aside className="home-side-panel">
+            <section className="dashboard-home page-grid">
+                <aside className="home-side-panel page-card">
                     <div className="side-panel-header">
                         <p className="eyebrow">Pages</p>
                         <h2>Navigation</h2>
@@ -180,7 +180,7 @@ export default function DashboardPage() {
                     </div>
                 </aside>
 
-                <div className="home-main-panel">
+                <div className="home-main-panel page-card">
                     <p className="eyebrow">Workspace</p>
                     <h1>Welcome, {user?.name}</h1>
                     <p>

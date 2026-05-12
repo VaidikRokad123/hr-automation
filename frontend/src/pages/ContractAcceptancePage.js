@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import apiClient from '../api/client';
 import ContractViewer from '../modules/Contract/ContractViewer';
@@ -19,15 +19,21 @@ export default function ContractAcceptancePage() {
     const [electronicConsent, setElectronicConsent] = useState(false);
     const [agreementConsent, setAgreementConsent] = useState(false);
     const [typedName, setTypedName] = useState('');
+    const [signatureDataUrl, setSignatureDataUrl] = useState('');
+    const [currentPageIndex, setCurrentPageIndex] = useState(0);
     const [submitting, setSubmitting] = useState(false);
     const [resendMessage, setResendMessage] = useState('');
+    const signatureCanvasRef = useRef(null);
+    const signatureDrawingRef = useRef(false);
 
     const requiredPageIds = useMemo(
         () => (contract?.pagesData || []).map((page, index) => `page-${page.pageNumber || index + 1}`),
         [contract]
     );
+    const totalPages = requiredPageIds.length;
+    const isLastPage = totalPages > 0 && currentPageIndex === totalPages - 1;
     const allViewed = requiredPageIds.length > 0 && requiredPageIds.every((pageId) => viewedSections.has(pageId));
-    const canAccept = allViewed && electronicConsent && agreementConsent && typedName.trim() && !submitting;
+    const canAccept = allViewed && electronicConsent && agreementConsent && typedName.trim() && signatureDataUrl && !submitting;
 
     const fetchContract = useCallback(async () => {
         try {
@@ -111,7 +117,8 @@ export default function ContractAcceptancePage() {
                 electronicConsent,
                 agreementConsent,
                 typedName,
-                viewedSections: Array.from(viewedSections)
+                viewedSections: Array.from(viewedSections),
+                signatureDataUrl
             });
             setState('accepted');
         } catch (err) {
@@ -121,10 +128,96 @@ export default function ContractAcceptancePage() {
         }
     };
 
+    const clearSignature = useCallback(() => {
+        const canvas = signatureCanvasRef.current;
+        if (!canvas) return;
+        const context = canvas.getContext('2d');
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        setSignatureDataUrl('');
+    }, []);
+
+    const resizeSignatureCanvas = useCallback(() => {
+        const canvas = signatureCanvasRef.current;
+        if (!canvas) return;
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        const width = canvas.offsetWidth;
+        const height = canvas.offsetHeight;
+        const context = canvas.getContext('2d');
+        const previousDataUrl = canvas.dataset.signatureDataUrl;
+
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        context.lineWidth = 2.5;
+        context.lineCap = 'round';
+        context.lineJoin = 'round';
+        context.strokeStyle = '#1f4e79';
+
+        if (previousDataUrl) {
+            const image = new Image();
+            image.onload = () => context.drawImage(image, 0, 0, width, height);
+            image.src = previousDataUrl;
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!isLastPage) return undefined;
+
+        resizeSignatureCanvas();
+
+        const handleResize = () => resizeSignatureCanvas();
+        window.addEventListener('resize', handleResize);
+
+        return () => window.removeEventListener('resize', handleResize);
+    }, [isLastPage, resizeSignatureCanvas]);
+
+    const handleSignaturePointerDown = (event) => {
+        const canvas = signatureCanvasRef.current;
+        if (!canvas) return;
+
+        const context = canvas.getContext('2d');
+        const rect = canvas.getBoundingClientRect();
+        signatureDrawingRef.current = true;
+        context.beginPath();
+        context.moveTo(event.clientX - rect.left, event.clientY - rect.top);
+    };
+
+    const handleSignaturePointerMove = (event) => {
+        if (!signatureDrawingRef.current) return;
+
+        const canvas = signatureCanvasRef.current;
+        if (!canvas) return;
+
+        const context = canvas.getContext('2d');
+        const rect = canvas.getBoundingClientRect();
+        context.lineTo(event.clientX - rect.left, event.clientY - rect.top);
+        context.stroke();
+        canvas.dataset.signatureDataUrl = canvas.toDataURL('image/png');
+        setSignatureDataUrl(canvas.dataset.signatureDataUrl);
+    };
+
+    const handleSignaturePointerUp = () => {
+        signatureDrawingRef.current = false;
+    };
+
+    const goToPreviousPage = () => {
+        setCurrentPageIndex((current) => Math.max(0, current - 1));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const goToNextPage = () => {
+        setCurrentPageIndex((current) => Math.min(totalPages - 1, current + 1));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [currentPageIndex]);
+
     if (state === 'init' || state === 'loading_contract') {
         return (
-            <main className="contract-acceptance-page">
-                <section className="contract-access-panel">
+            <main className="contract-acceptance-page app-page">
+                <section className="contract-access-panel page-card">
                     <h1>Preparing contract</h1>
                     <p>Please wait while we verify this secure contract session.</p>
                 </section>
@@ -134,12 +227,13 @@ export default function ContractAcceptancePage() {
 
     if (state === 'otp_required') {
         return (
-            <main className="contract-acceptance-page">
-                <section className="contract-access-panel">
+            <main className="contract-acceptance-page app-page">
+                <section className="contract-access-panel page-card">
                     <h1>Verify your email</h1>
                     <p>We sent a 6-digit verification code to {maskedEmail || 'your registered email'}.</p>
                     <form onSubmit={verifyOtp}>
                         <input
+                            className="form-control"
                             value={otp}
                             onChange={(event) => setOtp(event.target.value.replace(/\D/g, '').slice(0, 6))}
                             inputMode="numeric"
@@ -148,10 +242,10 @@ export default function ContractAcceptancePage() {
                         />
                         {error && <div className="contract-inline-error">{error}</div>}
                         {resendMessage && <p>{resendMessage}</p>}
-                        <button type="submit" disabled={otp.length !== 6 || submitting}>
+                        <button type="submit" className="page-button" disabled={otp.length !== 6 || submitting}>
                             {submitting ? 'Verifying...' : 'Verify & Continue'}
                         </button>
-                        <button type="button" className="contract-secondary-btn" onClick={resendOtp} disabled={submitting}>
+                        <button type="button" className="page-button-secondary contract-secondary-btn" onClick={resendOtp} disabled={submitting}>
                             Resend code
                         </button>
                     </form>
@@ -162,8 +256,8 @@ export default function ContractAcceptancePage() {
 
     if (state === 'accepted') {
         return (
-            <main className="contract-acceptance-page">
-                <section className="contract-success-panel">
+            <main className="contract-acceptance-page app-page">
+                <section className="contract-success-panel page-card">
                     <h1>Contract accepted</h1>
                     <p>Thank you. Your acceptance has been recorded and HR has been notified.</p>
                 </section>
@@ -173,8 +267,8 @@ export default function ContractAcceptancePage() {
 
     if (state === 'error') {
         return (
-            <main className="contract-acceptance-page">
-                <section className="contract-error-panel">
+            <main className="contract-acceptance-page app-page">
+                <section className="contract-error-panel page-card">
                     <h1>Contract unavailable</h1>
                     <p>{error || 'This contract cannot be opened right now.'}</p>
                 </section>
@@ -183,17 +277,7 @@ export default function ContractAcceptancePage() {
     }
 
     return (
-        <main className="contract-acceptance-page">
-            <header className="contract-review-header">
-                <div>
-                    <h1>Employment Contract Review</h1>
-                    <p>{contract.workerName} | {contract.workerEmail}</p>
-                </div>
-                <div className="contract-progress-pill">
-                    Viewed {viewedSections.size}/{requiredPageIds.length} pages
-                </div>
-            </header>
-
+        <main className="contract-acceptance-page app-page">
             {error && <div className="contract-inline-error">{error}</div>}
 
             <ContractViewer
@@ -203,37 +287,59 @@ export default function ContractAcceptancePage() {
                 contractId={contract.contractId}
                 viewedSections={viewedSections}
                 onViewedSectionsChange={setViewedSections}
+                currentPageIndex={currentPageIndex}
+                onPageIndexChange={setCurrentPageIndex}
             />
 
-            <section className="contract-acceptance-bar">
-                <strong>{allViewed ? 'Ready to accept' : `View all pages: ${viewedSections.size}/${requiredPageIds.length}`}</strong>
-                <div className="contract-checkboxes">
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={electronicConsent}
-                            onChange={(event) => setElectronicConsent(event.target.checked)}
+            {isLastPage && (
+                <section className="contract-acceptance-bar page-card">
+                    <strong>{allViewed ? 'Ready to accept' : `View all pages: ${viewedSections.size}/${requiredPageIds.length}`}</strong>
+                    <div className="contract-checkboxes">
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={electronicConsent}
+                                onChange={(event) => setElectronicConsent(event.target.checked)}
+                            />
+                            I consent to receive and sign this contract electronically.
+                        </label>
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={agreementConsent}
+                                onChange={(event) => setAgreementConsent(event.target.checked)}
+                            />
+                            I have read and agree to all terms in this contract.
+                        </label>
+                    </div>
+                    <input
+                        className="form-control"
+                        value={typedName}
+                        onChange={(event) => setTypedName(event.target.value)}
+                        placeholder="Type your full name"
+                    />
+                    <div className="contract-signature-box">
+                        <div className="contract-signature-header">
+                            <strong>Digital Signature</strong>
+                            <button type="button" className="contract-secondary-btn" onClick={clearSignature}>
+                                Clear
+                            </button>
+                        </div>
+                        <canvas
+                            ref={signatureCanvasRef}
+                            className="contract-signature-canvas"
+                            onPointerDown={handleSignaturePointerDown}
+                            onPointerMove={handleSignaturePointerMove}
+                            onPointerUp={handleSignaturePointerUp}
+                            onPointerLeave={handleSignaturePointerUp}
                         />
-                        I consent to receive and sign this contract electronically.
-                    </label>
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={agreementConsent}
-                            onChange={(event) => setAgreementConsent(event.target.checked)}
-                        />
-                        I have read and agree to all terms in this contract.
-                    </label>
-                </div>
-                <input
-                    value={typedName}
-                    onChange={(event) => setTypedName(event.target.value)}
-                    placeholder="Type your full name"
-                />
-                <button type="button" disabled={!canAccept} onClick={acceptContract}>
-                    {submitting ? 'Accepting...' : 'Accept Contract'}
-                </button>
-            </section>
+                        <p className="contract-signature-help">Use your mouse or touch to sign inside the box.</p>
+                    </div>
+                    <button type="button" className="page-button" disabled={!canAccept} onClick={acceptContract}>
+                        {submitting ? 'Accepting...' : 'Accept Contract'}
+                    </button>
+                </section>
+            )}
         </main>
     );
 }

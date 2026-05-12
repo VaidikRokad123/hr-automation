@@ -6,18 +6,20 @@ export default function OfferLetterPage() {
     const navigate = useNavigate();
 
     return (
-        <main className="offer-letter-page">
-            <header className="offer-letter-page-header">
-                <div>
+        <main className="offer-letter-page app-page">
+            <header className="offer-letter-page-header page-header">
+                <div className="page-title">
                     <p className="eyebrow">Documents</p>
                     <h1>Generate Offer Letter</h1>
                 </div>
-                <button type="button" className="ghost-btn" onClick={() => navigate('/dashboard')}>
+                <button type="button" className="page-button-secondary" onClick={() => navigate('/dashboard')}>
                     Back to Home
                 </button>
             </header>
 
-            <OfferLetter />
+            <div className="page-card">
+                <OfferLetter />
+            </div>
         </main>
     );
 }

@@ -28,9 +28,9 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="auth-shell">
-            <div className="auth-card">
-                <div className="auth-copy">
+        <div className="auth-shell app-page">
+            <div className="auth-card page-shell">
+                <div className="auth-copy page-card">
                     <p className="eyebrow">People ledger</p>
                     <div className="auth-hero">
                         <h1>Open the people ledger.</h1>
@@ -52,32 +52,32 @@ export default function LoginPage() {
                     </div>
                 </div>
 
-                <form className="auth-form" onSubmit={handleSubmit}>
+                <form className="auth-form page-card form-stack" onSubmit={handleSubmit}>
                     <div className="auth-badges demo-actions">
-                        <button type="button" className="ghost-btn" onClick={() => { setEmail('ceo@hrsystem.local'); setPassword('Password123!'); }}>
+                        <button type="button" className="page-button-secondary" onClick={() => { setEmail('ceo@hrsystem.local'); setPassword('Password123!'); }}>
                             CEO demo
                         </button>
-                        <button type="button" className="ghost-btn" onClick={() => { setEmail('hr@hrsystem.local'); setPassword('Password123!'); }}>
+                        <button type="button" className="page-button-secondary" onClick={() => { setEmail('hr@hrsystem.local'); setPassword('Password123!'); }}>
                             HR demo
                         </button>
-                        <button type="button" className="ghost-btn" onClick={() => { setEmail('worker@hrsystem.local'); setPassword('Password123!'); }}>
+                        <button type="button" className="page-button-secondary" onClick={() => { setEmail('worker@hrsystem.local'); setPassword('Password123!'); }}>
                             Worker demo
                         </button>
                     </div>
 
-                    <label>
+                    <label className="form-field">
                         Email
-                        <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="you@example.com" />
+                        <input className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="you@example.com" />
                     </label>
 
-                    <label>
+                    <label className="form-field">
                         Password
-                        <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Your password" />
+                        <input className="form-control" value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Your password" />
                     </label>
 
-                    {error && <div className="auth-error">{error}</div>}
+                    {error && <div className="page-error">{error}</div>}
 
-                    <button type="submit" disabled={loading}>
+                    <button type="submit" className="page-button" disabled={loading}>
                         {loading ? 'Signing in...' : 'Login'}
                     </button>
 

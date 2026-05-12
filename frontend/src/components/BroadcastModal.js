@@ -51,17 +51,17 @@ export default function BroadcastModal({ onClose }) {
 
     return (
         <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="broadcast-modal-title">
-            <div className="modal-card broadcast-modal">
+            <div className="modal-card broadcast-modal page-card">
                 {/* Header */}
                 <div className="modal-header">
                     <div>
                         <p className="eyebrow">HR Broadcast</p>
                         <h2 id="broadcast-modal-title">Send Notification</h2>
                     </div>
-                    <button
+                        <button
                         type="button"
                         id="broadcast-modal-close"
-                        className="modal-close-btn"
+                            className="modal-close-btn page-button-secondary"
                         onClick={onClose}
                         aria-label="Close"
                     >
@@ -132,13 +132,13 @@ export default function BroadcastModal({ onClose }) {
                     {success && <div className="broadcast-success">{success}</div>}
 
                     <div className="broadcast-actions">
-                        <button type="button" className="ghost-btn" onClick={onClose} disabled={loading}>
+                        <button type="button" className="page-button-secondary" onClick={onClose} disabled={loading}>
                             Cancel
                         </button>
                         <button
                             id="broadcast-send-btn"
                             type="submit"
-                            className="logout-btn"
+                            className="page-button"
                             disabled={loading || !form.title.trim() || !form.message.trim()}
                         >
                             {loading ? 'Sending…' : '📢 Broadcast to All'}
