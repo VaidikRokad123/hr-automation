@@ -230,3 +230,310 @@
   position: relative;
   top: 0;
 }
+
+.OfferLetterContainer {
+  display: grid;
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+  gap: 18px;
+  width: 100%;
+  min-height: 680px;
+  align-items: start;
+}
+
+.notification-popup {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  min-width: 260px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: rgba(45, 138, 102, 0.96);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 18px 36px rgba(45, 138, 102, 0.22);
+  font-weight: 700;
+  animation: slideInBottom 0.35s ease-out;
+}
+
+@keyframes slideInBottom {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.FormSection,
+.PreviewSection {
+  width: 100%;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.44);
+  background: rgba(255, 250, 244, 0.78);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+.FormSection {
+  position: sticky;
+  top: 18px;
+  max-height: calc(100vh - 44px);
+  overflow: auto;
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.PreviewSection {
+  min-height: 100%;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.FormSection h2,
+.PreviewSection h2 {
+  text-align: left;
+  margin-bottom: 6px;
+  color: var(--text);
+  font-size: 2.1rem;
+}
+
+.form-group {
+  display: grid;
+  gap: 8px;
+}
+
+.form-group label {
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
+}
+
+.form-group input[type='text'],
+.form-group input[type='number'],
+.form-group input[type='date'] {
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid rgba(19, 34, 53, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.form-group input[type='text']:focus,
+.form-group input[type='number']:focus,
+.form-group input[type='date']:focus {
+  outline: none;
+  border-color: rgba(160, 98, 52, 0.75);
+  box-shadow: 0 0 0 4px rgba(160, 98, 52, 0.12);
+  transform: translateY(-1px);
+}
+
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.radio-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(19, 34, 53, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.radio-group input[type='radio'] {
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.error-message {
+  color: #8d342c;
+  background: rgba(181, 70, 61, 0.1);
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(181, 70, 61, 0.16);
+}
+
+.FormSection button {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: 14px;
+}
+
+.generate-btn {
+  background: linear-gradient(135deg, #173e57, #a06234);
+}
+
+.advanced-btn {
+  background: linear-gradient(135deg, #214a63, #6a4a30);
+}
+
+.download-btn {
+  background: linear-gradient(135deg, #2d8a66, #4a7b53);
+}
+
+.generate-btn:disabled {
+  background: rgba(19, 34, 53, 0.38);
+}
+
+.pdf-viewer {
+  width: 100%;
+  min-height: 620px;
+  flex: 1;
+  border: 1px solid rgba(19, 34, 53, 0.12);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.no-preview {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  min-height: 620px;
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px dashed rgba(19, 34, 53, 0.16);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.no-preview p:first-child {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ─── Midnight Galaxy theme overrides ─── */
+.OfferLetterContainer .FormSection,
+.OfferLetterContainer .PreviewSection {
+  border-radius: 20px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(20px);
+  color: var(--text);
+}
+
+.OfferLetterContainer .FormSection h2,
+.OfferLetterContainer .PreviewSection h2 {
+  font-family: 'Syne', sans-serif;
+  color: var(--text);
+}
+
+.OfferLetterContainer .form-group label {
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.OfferLetterContainer .form-group input[type='text'],
+.OfferLetterContainer .form-group input[type='number'],
+.OfferLetterContainer .form-group input[type='date'] {
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.OfferLetterContainer .form-group input[type='text']::placeholder,
+.OfferLetterContainer .form-group input[type='number']::placeholder {
+  color: var(--muted);
+}
+
+.OfferLetterContainer .form-group input[type='text']:focus,
+.OfferLetterContainer .form-group input[type='number']:focus,
+.OfferLetterContainer .form-group input[type='date']:focus {
+  border-color: rgba(56, 189, 248, 0.55);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+  background: rgba(56, 189, 248, 0.04);
+}
+
+.OfferLetterContainer .radio-group label {
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-soft);
+}
+.OfferLetterContainer .radio-group input[type='radio'] {
+  accent-color: var(--accent);
+}
+
+.OfferLetterContainer .generate-btn {
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.22);
+}
+
+.OfferLetterContainer .advanced-btn {
+  background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+}
+
+.OfferLetterContainer .download-btn {
+  background: linear-gradient(135deg, #059669, #34d399);
+}
+
+.OfferLetterContainer .generate-btn:disabled {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+}
+
+.OfferLetterContainer .pdf-viewer {
+  border-color: var(--line-strong);
+  background: #fff;
+}
+
+.OfferLetterContainer .no-preview {
+  border-color: rgba(56, 189, 248, 0.12);
+  background: rgba(56, 189, 248, 0.03);
+  color: var(--text-soft);
+}
+
+.OfferLetterContainer .notification-popup {
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: #34d399;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(52, 211, 153, 0.1);
+}
+
+.OfferLetterContainer .error-message {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.2);
+}
+
+@media (max-width: 1024px) {
+  .OfferLetterContainer {
+    grid-template-columns: 1fr;
+  }
+  .FormSection {
+    position: relative;
+    top: 0;
+    max-height: none;
+  }
+  .pdf-viewer,
+  .no-preview {
+    min-height: 540px;
+  }
+}
+
+@media (max-width: 700px) {
+  .FormSection,
+  .PreviewSection { padding: 18px; }
+  .FormSection h2,
+  .PreviewSection h2 { font-size: 1.6rem; }
+  .radio-group label { width: 100%; justify-content: flex-start; }
+}
+

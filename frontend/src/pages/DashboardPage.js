@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import OfferLetter from '../modules/OfferLetter/OfferLetter';
 import apiClient from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import NotificationBell from '../components/NotificationBell';
+import BroadcastModal from '../components/BroadcastModal';
 
 export default function DashboardPage() {
     const navigate = useNavigate();
@@ -11,6 +13,7 @@ export default function DashboardPage() {
     const [selectedWorkerId, setSelectedWorkerId] = useState('');
     const [resumeForm, setResumeForm] = useState({ summary: '', skills: '', experience: '', education: '', resumeUrl: '' });
     const [statusMessage, setStatusMessage] = useState('');
+    const [broadcastOpen, setBroadcastOpen] = useState(false);
     const isPrivileged = ['ceo', 'hr'].includes(user?.role);
 
     useEffect(() => {
@@ -71,13 +74,28 @@ export default function DashboardPage() {
 
     return (
         <div className="dashboard-shell">
+            {broadcastOpen && <BroadcastModal onClose={() => setBroadcastOpen(false)} />}
+
             <header className="dashboard-header">
                 <div>
-                    <p className="eyebrow">HR portal</p>
+                    <p className="eyebrow">Operational console</p>
                     <h1>{user?.name}</h1>
                     <p>{user?.role?.toUpperCase()} access</p>
                 </div>
-                <button type="button" className="logout-btn" onClick={handleLogout}>Logout</button>
+                <div className="header-right-actions">
+                    {isPrivileged && (
+                        <button
+                            id="open-broadcast-btn"
+                            type="button"
+                            className="ghost-btn broadcast-trigger-btn"
+                            onClick={() => setBroadcastOpen(true)}
+                        >
+                            📢 Send Notification
+                        </button>
+                    )}
+                    <NotificationBell />
+                    <button type="button" className="logout-btn" onClick={handleLogout}>Logout</button>
+                </div>
             </header>
 
             <section className="dashboard-hero">

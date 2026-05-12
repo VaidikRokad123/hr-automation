@@ -31,11 +31,11 @@ export default function LoginPage() {
         <div className="auth-shell">
             <div className="auth-card">
                 <div className="auth-copy">
-                    <p className="eyebrow">HR portal</p>
+                    <p className="eyebrow">People ledger</p>
                     <div className="auth-hero">
-                        <h1>Login to the portal</h1>
+                        <h1>Open the people ledger.</h1>
                         <p className="auth-note">
-                            Use a CEO, HR, or Worker account to access the system.
+                            Sign in with a CEO, HR, or Worker account to enter the workspace and review the people, resumes, and offer-letter tools.
                         </p>
                         <div className="auth-badges">
                             <span className="hero-pill">Token login</span>

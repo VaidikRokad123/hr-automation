@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import './AdvancedEditor.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import apiClient from '../../api/client';
@@ -208,12 +208,7 @@ function AdvancedEditor() {
     return rebalanced;
   };
 
-  // Fetch data from backend on component mount
-  useEffect(() => {
-    fetchOfferLetterData();
-  }, []);
-
-  const fetchOfferLetterData = async () => {
+  const fetchOfferLetterData = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -235,7 +230,7 @@ function AdvancedEditor() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [location.state?.pdfUrl]);
 
   const addNewPage = () => {
     const newPage = {
@@ -597,20 +592,27 @@ function AdvancedEditor() {
   };
 
   // Predefined data variables
+  const placeholder = (name) => ['$', '{', name, '}'].join('');
+
   const predefinedVariables = [
-    { label: 'Name', value: '${name}' },
-    { label: 'Upper Name', value: '${upperName}' },
-    { label: 'Gender', value: '${gender}' },
-    { label: 'Intern Type', value: '${internType}' },
-    { label: 'Duration Type', value: '${durationType}' },
-    { label: 'Duration', value: '${duration}' },
-    { label: 'Role', value: '${role}' },
-    { label: 'Start Date', value: '${startDate}' },
-    { label: 'End Date', value: '${endDate}' },
-    { label: 'Salary Type', value: '${salaryType}' },
-    { label: 'Salary Amount', value: '${salaryAmount}' },
-    { label: 'Date', value: '${date}' }
+    { label: 'Name', value: placeholder('name') },
+    { label: 'Upper Name', value: placeholder('upperName') },
+    { label: 'Gender', value: placeholder('gender') },
+    { label: 'Intern Type', value: placeholder('internType') },
+    { label: 'Duration Type', value: placeholder('durationType') },
+    { label: 'Duration', value: placeholder('duration') },
+    { label: 'Role', value: placeholder('role') },
+    { label: 'Start Date', value: placeholder('startDate') },
+    { label: 'End Date', value: placeholder('endDate') },
+    { label: 'Salary Type', value: placeholder('salaryType') },
+    { label: 'Salary Amount', value: placeholder('salaryAmount') },
+    { label: 'Date', value: placeholder('date') }
   ];
+
+  // Fetch data from backend on component mount
+  useEffect(() => {
+    fetchOfferLetterData();
+  }, [fetchOfferLetterData]);
 
   if (loading) {
     return (

@@ -7,9 +7,11 @@ import mongoose from 'mongoose';
 import offerLetterRoutes from './routes/offerLetterRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 import { authenticateToken, authorizeRoles } from './middleware/authMiddleware.js';
 import { ROLE_CEO, ROLE_HR } from './constants/roles.js';
 import { seedDefaultUsers } from './services/seedDefaultUsers.js';
+import { startBroadcastConsumer } from './services/messaging/broadcastConsumer.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -46,6 +48,7 @@ app.use(
 app.use('/api/auth', requireDatabase, authRoutes);
 app.use('/api/users', requireDatabase, authenticateToken, userRoutes);
 app.use('/api/offerletter', authenticateToken, authorizeRoles(ROLE_CEO, ROLE_HR), offerLetterRoutes);
+app.use('/api/notifications', authenticateToken, notificationRoutes);
 
 app.get('/', (req, res) => {
     res.json({
@@ -68,6 +71,13 @@ async function startServer() {
         console.log('Seeding default users...');
         await seedDefaultUsers();
         app.locals.dbReady = true;
+
+        // Start RabbitMQ broadcast consumer (non-fatal if unavailable)
+        try {
+            await startBroadcastConsumer();
+        } catch (err) {
+            console.warn('RabbitMQ unavailable — broadcast notifications disabled:', err.message);
+        }
 
         app.listen(PORT, () => {
             console.log(`Connected to MongoDB: ${process.env.MONGODB_DB_NAME || 'hr_management'}`);
