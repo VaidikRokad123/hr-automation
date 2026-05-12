@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema(
             default: ROLE_WORKER,
             required: true
         },
+        onboardingStatus: {
+            type: String,
+            enum: ['not_started', 'contract_sent', 'contract_viewed', 'contract_accepted'],
+            default: 'not_started'
+        },
         resume: { type: resumeSchema, default: () => ({}) }
     },
     { timestamps: true }

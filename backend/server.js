@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import path from 'path';
 import mongoose from 'mongoose';
 
@@ -8,6 +10,7 @@ import offerLetterRoutes from './routes/offerLetterRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import contractRoutes from './routes/contractRoutes.js';
 import { authenticateToken, authorizeRoles } from './middleware/authMiddleware.js';
 import { ROLE_CEO, ROLE_HR } from './constants/roles.js';
 import { seedDefaultUsers } from './services/seedDefaultUsers.js';
@@ -29,13 +32,27 @@ function requireDatabase(req, res, next) {
 }
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(helmet({
+    crossOriginResourcePolicy: false,
+    xFrameOptions: false
+}));
+app.use(cors({
+    origin: process.env.FRONTEND_URL || true,
+    credentials: true
+}));
+app.use(cookieParser());
+app.use(express.json({ limit: '15mb' }));
 app.use(express.static('public'));
 
 // VERY IMPORTANT
 app.use(
     '/GeneratedOfferLetter',
+    (req, res, next) => {
+        const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+        res.removeHeader('X-Frame-Options');
+        res.setHeader('Content-Security-Policy', `frame-ancestors 'self' ${frontendUrl}`);
+        next();
+    },
     express.static(
         path.join(
             process.cwd(),
@@ -49,6 +66,7 @@ app.use('/api/auth', requireDatabase, authRoutes);
 app.use('/api/users', requireDatabase, authenticateToken, userRoutes);
 app.use('/api/offerletter', authenticateToken, authorizeRoles(ROLE_CEO, ROLE_HR), offerLetterRoutes);
 app.use('/api/notifications', authenticateToken, notificationRoutes);
+app.use('/api/contracts', requireDatabase, contractRoutes);
 
 app.get('/', (req, res) => {
     res.json({

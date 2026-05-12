@@ -7,6 +7,14 @@ wkhtml.command = process.env.WKHTMLTOPDF_PATH || 'wkhtmltopdf';
 
 const OUTPUT_DIR = process.env.OFFER_LETTER_OUTPUT_DIR || 'GeneratedOfferLetter';
 
+function safeFilePart(value) {
+    return String(value || 'offer')
+        .trim()
+        .replace(/[^a-z0-9_-]+/gi, '_')
+        .replace(/^_+|_+$/g, '')
+        || 'offer';
+}
+
 export async function generatePDFFromData(data) {
     return new Promise((resolve, reject) => {
         const folderPath = path.join(process.cwd(), OUTPUT_DIR);
@@ -17,7 +25,7 @@ export async function generatePDFFromData(data) {
         const upperName = data.metadata.upperName || data.metadata.name?.toUpperCase() || 'UNKNOWN';
         const internType = data.metadata.internType || 'internship';
         const timestamp = Date.now();
-        const fileName = `${internType}_Letter_${upperName}_${timestamp}.pdf`;
+        const fileName = `${safeFilePart(internType)}_Letter_${safeFilePart(upperName)}_${timestamp}.pdf`;
         const outputFile = path.join(folderPath, fileName);
 
         let assets;

@@ -2,16 +2,24 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import './AdvancedEditor.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import apiClient from '../../api/client';
+import { sanitizeHtml } from '../../utils/safeHtml';
 
 function AdvancedEditor() {
   const location = useLocation();
   const navigate = useNavigate();
+  const editorMode = location.state?.mode || 'offer';
+  const selectedWorker = location.state?.worker || null;
+  const initialPages = location.state?.pages || null;
+  const initialMetadata = location.state?.metadata || null;
+  const isContractMode = editorMode === 'contract';
   const [pdfUrl, setPdfUrl] = useState(location.state?.pdfUrl || '');
   const [pages, setPages] = useState([]);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [metadata, setMetadata] = useState({});
   const [loading, setLoading] = useState(true);
   const [compiling, setCompiling] = useState(false);
+  const [generatingContract, setGeneratingContract] = useState(false);
+  const [sendingContract, setSendingContract] = useState(false);
   const [error, setError] = useState('');
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
@@ -28,6 +36,26 @@ function AdvancedEditor() {
   const PX_PER_MM = 96 / 25.4;
 
   const stripHtml = (text = '') => String(text).replace(/<[^>]*>/g, '');
+
+  const renderContractPreviewParagraph = (para, index) => {
+    const type = para.type || 'paragraph';
+
+    if (type === 'image') {
+      return (
+        <div key={para.id || index} className="contract-preview-image">
+          <img src={para.content} alt={para.alt || 'Contract visual'} />
+        </div>
+      );
+    }
+
+    return (
+      <div
+        key={para.id || index}
+        className={`contract-preview-text contract-preview-${type}`}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(para.content) }}
+      />
+    );
+  };
 
   const measureParagraphsHeightMm = (paragraphs = []) => {
     const root = measurementRootRef.current;
@@ -212,12 +240,43 @@ function AdvancedEditor() {
     try {
       setLoading(true);
       setError('');
+
+      if (Array.isArray(initialPages) && initialPages.length > 0) {
+        setPages(initialPages);
+        setMetadata({
+          ...(initialMetadata || {}),
+          workerId: selectedWorker?._id || initialMetadata?.workerId,
+          workerName: selectedWorker?.name || initialMetadata?.workerName || initialMetadata?.name,
+          workerEmail: selectedWorker?.email || initialMetadata?.workerEmail
+        });
+        return;
+      }
+
       const response = await apiClient.get('/api/offerletter/data');
       
       if (response.data.success) {
         const { pages: backendPages, metadata: backendMetadata } = response.data.data;
-        setPages(backendPages);
-        setMetadata(backendMetadata);
+
+        if (isContractMode) {
+          const templatePayload = {
+            ...backendMetadata,
+            name: selectedWorker?.name || backendMetadata.name,
+            workerName: selectedWorker?.name || backendMetadata.workerName || backendMetadata.name,
+            workerEmail: selectedWorker?.email || backendMetadata.workerEmail,
+            workerId: selectedWorker?._id || backendMetadata.workerId
+          };
+          const templateResponse = await apiClient.post('/api/contracts/template', templatePayload);
+          setPages(templateResponse.data.data.pages);
+          setMetadata({
+            ...templateResponse.data.data.metadata,
+            workerId: selectedWorker?._id || templatePayload.workerId,
+            workerName: selectedWorker?.name || templatePayload.workerName,
+            workerEmail: selectedWorker?.email || templatePayload.workerEmail
+          });
+        } else {
+          setPages(backendPages);
+          setMetadata(backendMetadata);
+        }
         
         // Update PDF URL if available
         if (location.state?.pdfUrl) {
@@ -226,11 +285,48 @@ function AdvancedEditor() {
       }
     } catch (err) {
       console.error('Error fetching offer letter data:', err);
-      setError('Failed to load offer letter data. Please generate an offer letter first.');
+      if (isContractMode) {
+        try {
+          const templateResponse = await apiClient.post('/api/contracts/template', {
+            name: selectedWorker?.name,
+            workerName: selectedWorker?.name,
+            workerEmail: selectedWorker?.email,
+            workerId: selectedWorker?._id
+          });
+          setPages(templateResponse.data.data.pages);
+          setMetadata({
+            ...templateResponse.data.data.metadata,
+            workerId: selectedWorker?._id,
+            workerName: selectedWorker?.name,
+            workerEmail: selectedWorker?.email
+          });
+        } catch (templateErr) {
+          setPages([
+            {
+              pageNumber: 1,
+              paragraphs: [
+                {
+                  id: `p${Date.now()}`,
+                  content: selectedWorker ? `Employment Contract for ${selectedWorker.name}` : 'Employment Contract',
+                  type: 'subject'
+                },
+                {
+                  id: `p${Date.now()}_body`,
+                  content: 'Enter contract terms here.',
+                  type: 'paragraph'
+                }
+              ]
+            }
+          ]);
+          setMetadata({ workerId: selectedWorker?._id, workerName: selectedWorker?.name });
+        }
+      } else {
+        setError('Failed to load offer letter data. Please generate an offer letter first.');
+      }
     } finally {
       setLoading(false);
     }
-  }, [location.state?.pdfUrl]);
+  }, [initialMetadata, initialPages, isContractMode, location.state?.pdfUrl, selectedWorker]);
 
   const addNewPage = () => {
     const newPage = {
@@ -522,6 +618,67 @@ function AdvancedEditor() {
     }
   };
 
+  const generateContractFromOffer = async () => {
+    try {
+      setGeneratingContract(true);
+      setError('');
+
+      const response = await apiClient.post('/api/contracts/template', metadata);
+      navigate('/advanced-editor', {
+        state: {
+          mode: 'contract',
+          pages: response.data.data.pages,
+          metadata: response.data.data.metadata
+        }
+      });
+    } catch (err) {
+      console.error('Error generating contract:', err);
+      setError(err.response?.data?.message || 'Failed to generate contract. Please try again.');
+      setNotificationMessage('Failed to generate contract');
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000);
+    } finally {
+      setGeneratingContract(false);
+    }
+  };
+
+  const sendContract = async () => {
+    if (!selectedWorker?._id) {
+      setError('Please select a worker before sending a contract.');
+      return;
+    }
+
+    try {
+      setSendingContract(true);
+      setError('');
+
+      await apiClient.post('/api/contracts/send', {
+        workerId: selectedWorker._id,
+        pagesData: pages,
+        metadata: {
+          ...metadata,
+          workerName: selectedWorker.name,
+          workerEmail: selectedWorker.email
+        }
+      });
+
+      setNotificationMessage(`Contract sent to ${selectedWorker.name}`);
+      setShowNotification(true);
+      setTimeout(() => {
+        setShowNotification(false);
+        navigate('/dashboard');
+      }, 1200);
+    } catch (err) {
+      console.error('Error sending contract:', err);
+      setError(err.response?.data?.message || 'Failed to send contract. Please try again.');
+      setNotificationMessage('Failed to send contract');
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000);
+    } finally {
+      setSendingContract(false);
+    }
+  };
+
   const downloadPDF = () => {
     if (!pdfUrl) {
       setNotificationMessage('Please compile the PDF first');
@@ -540,7 +697,7 @@ function AdvancedEditor() {
   };
 
   const goBack = () => {
-    navigate('/');
+    navigate('/dashboard');
   };
 
   // Insert predefined data at cursor position
@@ -606,7 +763,10 @@ function AdvancedEditor() {
     { label: 'End Date', value: placeholder('endDate') },
     { label: 'Salary Type', value: placeholder('salaryType') },
     { label: 'Salary Amount', value: placeholder('salaryAmount') },
-    { label: 'Date', value: placeholder('date') }
+    { label: 'Date', value: placeholder('date') },
+    { label: 'Term Text', value: placeholder('termText') },
+    { label: 'Company', value: placeholder('companyName') },
+    { label: 'Signatory', value: placeholder('signatoryName') }
   ];
 
   // Fetch data from backend on component mount
@@ -618,7 +778,7 @@ function AdvancedEditor() {
     return (
       <div className="AdvancedEditor">
         <div className="loading-container">
-          <h2>Loading offer letter data...</h2>
+          <h2>{isContractMode ? 'Preparing contract editor...' : 'Loading offer letter data...'}</h2>
         </div>
       </div>
     );
@@ -647,15 +807,26 @@ function AdvancedEditor() {
       )}
 
       <div className="editor-header">
-        <button onClick={goBack} className="back-btn">← Back to Generator</button>
-        <h1>Advanced PDF Editor</h1>
+        <button onClick={goBack} className="back-btn">← Back to Dashboard</button>
+        <h1>{isContractMode ? 'Contract Editor' : 'Advanced PDF Editor'}</h1>
         <div className="header-actions">
-          <button onClick={compilePDF} disabled={compiling} className="compile-btn">
-            {compiling ? 'Compiling...' : '🔨 Compile PDF'}
-          </button>
-          <button onClick={downloadPDF} disabled={!pdfUrl} className="download-btn">
-            ⬇️ Download PDF
-          </button>
+          {isContractMode ? (
+            <button onClick={sendContract} disabled={sendingContract} className="compile-btn">
+              {sendingContract ? 'Sending...' : 'Finalise & Send Contract'}
+            </button>
+          ) : (
+            <>
+              <button onClick={compilePDF} disabled={compiling} className="compile-btn">
+                {compiling ? 'Compiling...' : '🔨 Compile PDF'}
+              </button>
+              <button onClick={generateContractFromOffer} disabled={generatingContract} className="compile-btn">
+                {generatingContract ? 'Generating...' : 'Generate Contract'}
+              </button>
+              <button onClick={downloadPDF} disabled={!pdfUrl} className="download-btn">
+                ⬇️ Download PDF
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -849,8 +1020,17 @@ function AdvancedEditor() {
 
         {/* Right Sidebar - Preview */}
         <div className="preview-section">
-          <h3>PDF Preview</h3>
-          {pdfUrl ? (
+          <h3>{isContractMode ? 'Contract Preview' : 'PDF Preview'}</h3>
+          {isContractMode ? (
+            <div className="contract-editor-preview" aria-label="Contract preview">
+              {pages.map((page, pageIndex) => (
+                <section key={page.pageNumber || pageIndex} className="contract-preview-page">
+                  <div className="contract-preview-page-number">Page {pageIndex + 1}</div>
+                  {(page.paragraphs || []).map(renderContractPreviewParagraph)}
+                </section>
+              ))}
+            </div>
+          ) : pdfUrl ? (
             <iframe
               src={pdfUrl}
               title="PDF Preview"

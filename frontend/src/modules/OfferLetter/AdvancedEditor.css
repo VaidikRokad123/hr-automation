@@ -1411,6 +1411,89 @@
   background: #fff;
 }
 
+.AdvancedEditor .contract-editor-preview {
+  flex: 1;
+  min-height: 620px;
+  overflow: auto;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid var(--line-strong);
+  background: #eef2f6;
+}
+
+.AdvancedEditor .contract-preview-page {
+  position: relative;
+  width: min(100%, 420px);
+  min-height: 594px;
+  margin: 0 auto 18px;
+  padding: 44px 42px;
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.14);
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.AdvancedEditor .contract-preview-page-number {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  color: #64748b;
+  font-size: 9px;
+}
+
+.AdvancedEditor .contract-preview-text {
+  margin-bottom: 10px;
+}
+
+.AdvancedEditor .contract-preview-text p {
+  margin: 0 0 8px;
+}
+
+.AdvancedEditor .contract-preview-text ul,
+.AdvancedEditor .contract-preview-text ol {
+  margin: 6px 0 10px 18px;
+  padding: 0;
+}
+
+.AdvancedEditor .contract-preview-text li {
+  margin-bottom: 4px;
+}
+
+.AdvancedEditor .contract-preview-paragraph,
+.AdvancedEditor .contract-preview-footer {
+  text-align: justify;
+}
+
+.AdvancedEditor .contract-preview-subject {
+  margin: 14px 0 10px;
+  text-align: center;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.AdvancedEditor .contract-preview-date {
+  text-align: right;
+}
+
+.AdvancedEditor .contract-preview-to {
+  font-weight: 600;
+}
+
+.AdvancedEditor .contract-preview-signature,
+.AdvancedEditor .contract-preview-company,
+.AdvancedEditor .contract-preview-separator {
+  margin-top: 14px;
+}
+
+.AdvancedEditor .contract-preview-image img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
 .AdvancedEditor .no-pdf {
   flex: 1;
   display: grid;

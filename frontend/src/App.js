@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import AdvancedEditor from './modules/OfferLetter/AdvancedEditor';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import ContractAcceptancePage from './pages/ContractAcceptancePage';
+import OfferLetterPage from './pages/OfferLetterPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import { ROLE_CEO, ROLE_HR } from './constants/roles';
@@ -27,10 +29,13 @@ function App() {
           <Routes>
             <Route path="/" element={<RootRedirect />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/accept-contract/:token" element={<ContractAcceptancePage />} />
+            <Route path="/accept-contract/review" element={<ContractAcceptancePage />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<DashboardPage />} />
             </Route>
             <Route element={<ProtectedRoute allowedRoles={[ROLE_CEO, ROLE_HR]} />}>
+              <Route path="/offer-letter" element={<OfferLetterPage />} />
               <Route path="/advanced-editor" element={<AdvancedEditor />} />
             </Route>
             <Route path="*" element={<LoginPage />} />

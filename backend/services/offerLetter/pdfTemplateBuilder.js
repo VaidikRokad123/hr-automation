@@ -39,8 +39,22 @@ export function replaceVariables(text, metadata = {}) {
         endDate: formatOrdinalDate(metadata.endDate),
         salaryType: metadata.salaryType || '',
         salaryAmount: metadata.salaryAmount || '',
-        date: metadata.date || ''
+        date: metadata.date || '',
+        agreementDate: formatOrdinalDate(metadata.agreementDate),
+        termText: metadata.termText || '',
+        workerName: metadata.workerName || metadata.name || '',
+        workerEmail: metadata.workerEmail || '',
+        companyName: metadata.companyName || '',
+        companyOffice: metadata.companyOffice || '',
+        signatoryName: metadata.signatoryName || '',
+        signatoryTitle: metadata.signatoryTitle || ''
     };
+
+    for (const [key, value] of Object.entries(metadata)) {
+        if (variables[key] === undefined && ['string', 'number'].includes(typeof value)) {
+            variables[key] = value;
+        }
+    }
 
     let result = text;
     for (const [key, value] of Object.entries(variables)) {

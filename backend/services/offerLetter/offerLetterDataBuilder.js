@@ -43,7 +43,7 @@ export function buildOfferLetterStructuredData(payload) {
     const companyName = `SAECULUM SOLUTIONS PV LTD`;
     const separator = '--------------------------------X----------------------------X-----------------------';
     const footer1 = `I, ${upperName}, hereby accept the above - mentioned Internship offer alongwith the terms mentioned therein and acknowledge receiving a copy of the same.`;
-    const footer2 = 'Signature_____________________' ;
+    const footer2 = 'Signature_____________________';
     const footer3 = `Name of the Trainee Accepting offer ${upperName}`;
     const footer4 = 'Place of sole & exclusive Jurisdiction: Ahmedabad, Gujarat, India';
 

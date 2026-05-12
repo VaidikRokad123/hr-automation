@@ -1,247 +1,294 @@
 # HR Management System
 
-This repository contains a full-stack HR management application with JWT authentication, role-based access control, worker resume management, notifications, and offer letter generation with PDF preview and editing.
+A full-stack HR workflow app with a Node.js/Express backend and a React frontend. The system covers authentication, role-based dashboards, worker management, notifications, offer-letter generation, and secure contract review and acceptance.
 
-## Overview
+## What the app does
 
-The system is split into a Node.js/Express backend and a React frontend. CEO and HR users can manage workers, update resume information, generate offer letters, send broadcasts, and review notifications. Worker users can sign in and view their limited dashboard state.
+This repository is organized around two main user experiences:
 
-The backend connects to MongoDB for user and resume data, uses RabbitMQ for notification broadcast delivery, and generates offer letter PDFs with `wkhtmltopdf`. If MongoDB is unavailable, the server can still start in degraded mode, but auth- and database-backed routes will return `503` until the database is restored.
+- A privileged HR/CEO workspace for generating offer letters, drafting contracts, browsing workers, and broadcasting notifications.
+- A worker-facing contract acceptance flow that uses a public contract link, OTP verification, page-by-page review, and electronic acceptance capture.
 
-## Core Features
+The backend stores users, contracts, notifications, and acceptance data in MongoDB. It also serves generated offer-letter files and can start a RabbitMQ broadcast consumer when messaging is available. If MongoDB is down, the server still starts in degraded mode, but database-backed APIs return `503` until the database is reachable again.
 
-- JWT-based login with protected routes on both the client and server
-- Role-based access for CEO, HR, and Worker accounts
-- Worker profile and resume management for privileged users
-- Notification center with unread counts, read tracking, and broadcast messages
-- Offer letter generation with PDF preview and download
-- Advanced offer-letter editor with page management, paragraph editing, auto-rebalancing, and compile support
-- Seed scripts for demo users and local development
+## Tech Stack
 
-## Application Flow
+- Backend: Node.js, Express, Mongoose, JWT, Helmet, CORS, cookie-parser, express-rate-limit
+- Frontend: React, React Router, Axios, Create React App
+- Messaging: RabbitMQ via `amqplib`
+- Email: Nodemailer
+- Document generation: `wkhtmltopdf`
 
-1. The user logs in through the React frontend.
-2. The backend issues a JWT and the frontend stores the session state.
-3. Protected routes expose different dashboard actions based on role.
-4. CEO and HR users can:
-   - load workers from MongoDB,
-   - edit worker resume details,
-   - open the offer-letter generator,
-   - open the advanced editor,
-   - send broadcast notifications to all members.
-5. Workers can sign in and access their limited dashboard experience.
-6. Notifications are fetched from the API and polled from the frontend every 30 seconds.
-
-## Project Structure
+## Repository Layout
 
 ```text
 hr/
-├── backend/
-│   ├── constants/
-│   │   └── roles.js
-│   ├── controllers/
-│   │   ├── authController.js
-│   │   ├── notificationController.js
-│   │   ├── userController.js
-│   │   └── wkhtmlOfferLetterController.js
-│   ├── middleware/
-│   │   └── authMiddleware.js
-│   ├── models/
-│   │   ├── notificationModel.js
-│   │   └── userModel.js
-│   ├── public/
-│   │   └── images/
-│   │       └── offerletter/
-│   ├── routes/
-│   │   ├── authRoutes.js
-│   │   ├── notificationRoutes.js
-│   │   ├── offerLetterRoutes.js
-│   │   └── userRoutes.js
-│   ├── scripts/
-│   │   └── seedUsers.js
-│   ├── services/
-│   │   ├── messaging/
-│   │   │   ├── broadcastConsumer.js
-│   │   │   ├── broadcastPublisher.js
-│   │   │   ├── messageConsumer.js
-│   │   │   ├── messagePublisher.js
-│   │   │   ├── queueNames.js
-│   │   │   └── rabbitmqConnection.js
-│   │   ├── offerLetter/
-│   │   │   ├── offerLetterDataBuilder.js
-│   │   │   ├── offerLetterState.js
-│   │   │   ├── pdfGenerator.js
-│   │   │   ├── pdfLayout.js
-│   │   │   ├── pdfPagination.js
-│   │   │   └── pdfTemplateBuilder.js
-│   │   └── seedDefaultUsers.js
-│   ├── utils/
-│   │   ├── dateFormatter.js
-│   │   ├── htmlHelpers.js
-│   │   └── sanitizeUser.js
-│   ├── GeneratedOfferLetter/
-│   ├── server.js
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── api/
-│   │   │   └── client.js
-│   │   ├── components/
-│   │   │   ├── BroadcastModal.js
-│   │   │   ├── NotificationBell.js
-│   │   │   └── ProtectedRoute.js
-│   │   ├── constants/
-│   │   │   └── roles.js
-│   │   ├── context/
-│   │   │   └── AuthContext.js
-│   │   ├── modules/
-│   │   │   └── OfferLetter/
-│   │   │       ├── AdvancedEditor.js
-│   │   │       ├── AdvancedEditor.css
-│   │   │       ├── OfferLetter.js
-│   │   │       └── OfferLetter.css
-│   │   └── pages/
-│   │       ├── DashboardPage.js
-│   │       └── LoginPage.js
-│   └── package.json
-└── README.md
+|-- backend/
+|   |-- constants/
+|   |-- controllers/
+|   |   |-- authController.js
+|   |   |-- contractController.js
+|   |   |-- notificationController.js
+|   |   |-- userController.js
+|   |   `-- wkhtmlOfferLetterController.js
+|   |-- middleware/
+|   |-- models/
+|   |   |-- acceptanceAuditModel.js
+|   |   |-- contractInvitationModel.js
+|   |   |-- contractModel.js
+|   |   |-- notificationModel.js
+|   |   `-- userModel.js
+|   |-- public/
+|   |   `-- images/offerletter/
+|   |-- routes/
+|   |   |-- authRoutes.js
+|   |   |-- contractRoutes.js
+|   |   |-- notificationRoutes.js
+|   |   |-- offerLetterRoutes.js
+|   |   `-- userRoutes.js
+|   |-- scripts/
+|   |   `-- seedUsers.js
+|   |-- services/
+|   |   |-- messaging/
+|   |   |-- offerLetter/
+|   |   |-- contractEmailService.js
+|   |   |-- contractOtpService.js
+|   |   `-- seedDefaultUsers.js
+|   |-- utils/
+|   `-- server.js
+|-- frontend/
+|   |-- public/
+|   |-- src/
+|   |   |-- api/
+|   |   |-- components/
+|   |   |-- constants/
+|   |   |-- context/
+|   |   |-- modules/
+|   |   |-- pages/
+|   |   `-- utils/
+|   `-- package.json
+|-- package.json
+`-- README.md
 ```
 
-## Backend Details
+## Backend Overview
 
-The backend server is started from `backend/server.js`. It:
+The backend entry point is [backend/server.js](backend/server.js). It loads environment variables, configures common middleware, connects to MongoDB, seeds default users, and starts the HTTP server.
 
-- loads environment variables with `dotenv`,
-- enables CORS and JSON parsing,
-- serves static assets from `backend/public`,
-- exposes generated offer-letter files from `GeneratedOfferLetter/`,
-- seeds default users after a successful MongoDB connection,
-- starts the RabbitMQ broadcast consumer when available.
+### Startup behavior
 
-### Backend Routes
+- `helmet` adds security headers.
+- `cors` is configured to allow the frontend origin from `FRONTEND_URL`.
+- `cookie-parser` and JSON body parsing are enabled.
+- Static assets are served from `backend/public`.
+- Generated offer-letter files are served from `/GeneratedOfferLetter`.
+- The RabbitMQ broadcast consumer starts after a successful MongoDB connection, but failure is non-fatal.
+- If MongoDB is not available, the app still boots and reports degraded mode.
+
+### Backend routes
+
+Authentication and users:
 
 - `POST /api/auth/login` - authenticate a user and return a JWT
 - `GET /api/users/me` - return the current user profile
-- `GET /api/users/workers` - list worker accounts for CEO and HR
-- `PATCH /api/users/workers/:id/resume` - update a worker resume
-- `POST /api/offerletter/generate` - generate an offer letter PDF
-- `GET /api/offerletter/data` - fetch the last offer-letter data set
+- `GET /api/users/workers` - list worker accounts for CEO and HR users
+- `PATCH /api/users/workers/:id/resume` - update worker resume data
+
+Offer letters:
+
+- `POST /api/offerletter/generate` - generate an offer-letter PDF
+- `GET /api/offerletter/data` - fetch the latest offer-letter data set
 - `POST /api/offerletter/compile` - compile edited pages into a PDF
-- `POST /api/notifications/newNotification` - queue a notification
-- `POST /api/notifications/broadcast` - broadcast a notification to all members
+
+Contracts:
+
+- `POST /api/contracts/template` - build a contract template from selected worker data
+- `POST /api/contracts/send` - create and send an encrypted contract invitation
+- `POST /api/contracts/session/exchange` - exchange a public contract token for a short-lived pre-session
+- `POST /api/contracts/session/resend-otp` - resend the OTP for the current contract pre-session
+- `POST /api/contracts/session/verify-otp` - verify the OTP and unlock contract review
+- `GET /api/contracts/current/data` - load the current contract review payload
+- `POST /api/contracts/current/accept` - accept the contract and store signed acceptance evidence
+
+Notifications:
+
+- `POST /api/notifications/newNotification` - create a notification for privileged users
 - `GET /api/notifications` - inspect stored notifications and queue metadata
+- `POST /api/notifications/broadcast` - broadcast a notification to members
 - `GET /api/notifications/my` - fetch notifications for the current user
-- `PATCH /api/notifications/read-all` - mark all user notifications as read
+- `PATCH /api/notifications/read-all` - mark all notifications as read
 - `PATCH /api/notifications/:id/read` - mark one notification as read
 
-### Backend Services
+### Backend security and contract handling
 
-- `services/messaging/` handles RabbitMQ connections, queue names, consumers, and publishers.
-- `services/offerLetter/` contains the PDF layout, pagination, template, and data-building logic.
-- `utils/sanitizeUser.js` strips sensitive fields before sending user data to the frontend.
+- Contract payloads are encrypted before storage.
+- Contract invitation links contain a public token and secret, but only a hash of the secret is stored.
+- Public contract access is rate limited.
+- OTP values are hashed before storage and expire after the configured OTP window.
+- The contract review flow uses HTTP-only cookies for the pre-session and the review session.
+- Accepted contracts store the worker name, IP address, user agent, timestamp, and signed audit evidence.
 
-## Frontend Details
+## Frontend Overview
 
-The frontend is a React application that uses `react-router-dom`, a shared API client, and an auth context for session handling.
+The frontend is a React application with React Router, a shared Axios client, and an auth context for session state.
 
-### Frontend Routes
+The top-level routes are defined in [frontend/src/App.js](frontend/src/App.js):
 
-- `/` - redirects to the dashboard when authenticated, otherwise to login
+- `/` - redirects to the dashboard when signed in, otherwise to login
 - `/login` - sign-in page
-- `/dashboard` - main dashboard, protected by authentication
-- `/advanced-editor` - protected editor for CEO and HR users
+- `/dashboard` - authenticated dashboard
+- `/offer-letter` - protected offer-letter generator for CEO and HR
+- `/advanced-editor` - protected advanced editor for CEO and HR
+- `/accept-contract/:token` - public entry point for contract recipients
+- `/accept-contract/review` - public contract review page after token exchange
 
-### Main UI Areas
+### Dashboard experience
 
-#### Login Page
+The dashboard in [frontend/src/pages/DashboardPage.js](frontend/src/pages/DashboardPage.js) acts as the main workspace after login.
 
-- Sign-in form for demo and real accounts
-- Fast login shortcuts for seeded users
+- It shows the current user name and role.
+- It exposes navigation actions that change based on role.
+- Privileged users can open the worker picker and generate a contract for a selected worker.
+- Privileged users can open the broadcast modal and send notifications.
+- All users can open the notification center and log out.
 
-#### Dashboard
+### Offer-letter flow
 
-- Header with role display, notification bell, and logout action
-- Worker list for CEO and HR users
-- Resume editor for the selected worker
-- Offer letter generator panel
-- Broadcast notification action for privileged users
+The offer-letter page in [frontend/src/pages/OfferLetterPage.js](frontend/src/pages/OfferLetterPage.js) wraps the offer-letter module and provides a back button to the dashboard.
 
-#### Notification Center
+The offer-letter module supports:
 
-- Shows unread counts in the header
-- Loads the latest notifications from `/api/notifications/my`
-- Supports marking a single notification or all notifications as read
-- Displays priority, sender, and relative time
+- collecting candidate details
+- generating a PDF preview from the backend
+- opening the generated document in a new tab
+- launching the advanced editor after generation
 
-#### Offer Letter Generator
+### Advanced editor
 
-- Collects the candidate name, gender, job type, duration, role, dates, and salary
-- Generates a PDF preview from the backend
-- Opens the generated document in a new tab
-- Can launch the advanced editor after generation
+The advanced editor in [frontend/src/modules/OfferLetter/AdvancedEditor.js](frontend/src/modules/OfferLetter/AdvancedEditor.js) is used for offer letters and contract drafting.
 
-#### Advanced Editor
+It supports:
 
-- Loads offer-letter page data from the backend
-- Adds and deletes pages
-- Adds, edits, and removes paragraphs
-- Supports paragraph type changes
-- Automatically rebalances content when pages overflow
-- Compiles the edited result back into a PDF
+- loading backend offer-letter page data
+- creating and deleting pages
+- adding and editing paragraphs
+- moving, splitting, and removing content blocks
+- changing paragraph types
+- uploading images
+- auto-rebalancing content across pages when the document overflows
+- compiling the edited pages back into a PDF
+- switching into contract mode to generate a worker-specific contract draft
 
-## Requirements
+### Contract acceptance flow
 
-- Node.js 18+ recommended
-- npm
-- MongoDB Atlas or a local MongoDB instance
-- RabbitMQ if you want broadcast notifications to work end to end
-- `wkhtmltopdf` installed on Windows or available on your PATH for PDF generation
+The contract acceptance experience in [frontend/src/pages/ContractAcceptancePage.js](frontend/src/pages/ContractAcceptancePage.js) is designed for recipients, not internal users.
+
+The flow works like this:
+
+1. The recipient opens a public link such as `/accept-contract/:token`.
+2. The frontend exchanges the token for a short-lived pre-session.
+3. The recipient verifies a 6-digit OTP sent to their registered email.
+4. After verification, the app loads the review view.
+5. The recipient must review every page in the contract.
+6. The recipient confirms electronic delivery consent, agreement consent, and typed full name.
+7. The acceptance payload is posted to the backend, which stores the signed result and audit evidence.
+
+The review screen also shows page progress, uses a contract viewer module, and blocks acceptance until all required checks are complete.
 
 ## Local Setup
 
-### 1. Backend
+### Prerequisites
+
+- Node.js 18 or later
+- npm
+- MongoDB Atlas or a local MongoDB instance
+- RabbitMQ if you want broadcasts to be consumed end to end
+- SMTP credentials if you want real email delivery for contract invites and OTPs
+- `wkhtmltopdf` installed or available on the PATH for PDF generation
+
+### Install dependencies
+
+From the repository root:
+
+```bash
+npm install
+```
+
+Then install the app packages:
 
 ```bash
 cd backend
 npm install
+
+cd ../frontend
+npm install
 ```
 
-Create or update `backend/.env`:
+### Backend environment
+
+Create `backend/.env` with values similar to the following:
 
 ```env
 PORT=5000
-MONGODB_URI=your_mongodb_connection_string
+FRONTEND_URL=http://localhost:3000
+MONGODB_URI=mongodb://127.0.0.1:27017/hr_management
 MONGODB_DB_NAME=hr_management
-JWT_SECRET=your_secret_key
+
+JWT_SECRET=replace-with-a-long-random-secret
 JWT_EXPIRES_IN=7d
+
 BASE_URL=http://localhost:5000
 WKHTMLTOPDF_PATH=C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe
 OFFER_LETTER_OUTPUT_DIR=GeneratedOfferLetter
+
 RABBITMQ_URL=amqp://127.0.0.1
 RABBITMQ_QUEUE_NAME=hr.notifications
 RABBITMQ_BROADCAST_EXCHANGE=hr.broadcast
 RABBITMQ_PREFETCH=10
+
+CONTRACT_MASTER_KEY=base64-encoded-32-byte-key
+CONTRACT_SESSION_SECRET=replace-with-a-session-secret
+CONTRACT_LINK_EXPIRY_DAYS=7
+TOKEN_PEPPER=replace-with-token-pepper
+OTP_PEPPER=replace-with-otp-pepper
+OTP_LENGTH=6
+OTP_EXPIRY_MINUTES=5
+CONTRACT_SESSION_EXPIRY_MINUTES=30
+
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=smtp-user
+SMTP_PASS=smtp-password
+SMTP_FROM=no-reply@example.com
 ```
 
-Start the backend:
+Optional acceptance signing settings can also be provided if your deployment uses signed audit evidence keys.
+
+### Run the backend
 
 ```bash
+cd backend
 npm start
 ```
 
-Seed the demo users:
+For development with automatic reload:
 
 ```bash
+cd backend
+npm run dev
+```
+
+### Seed demo users
+
+```bash
+cd backend
 npm run seed:users
 ```
 
-If MongoDB is unavailable, the server still starts, but auth, users, and other database-backed routes will not be available until the database reconnects.
-
-### 2. Frontend
+### Run the frontend
 
 ```bash
 cd frontend
-npm install
 npm start
 ```
 
@@ -253,13 +300,13 @@ All seeded accounts use the same password:
 
 `Password123!`
 
-Seeded users:
+Seeded users include:
 
 - CEO: `ceo@hrsystem.local`
 - HR: `hr@hrsystem.local`
 - Worker: `worker@hrsystem.local`
 
-Additional worker accounts:
+Additional worker accounts used for testing and contract generation:
 
 - `aarav.patel@hrsystem.local`
 - `meera.shah@hrsystem.local`
@@ -269,34 +316,69 @@ Additional worker accounts:
 
 ## Working Notes
 
-- `backend/public/images/offerletter/` stores the static assets used by the PDF generator.
-- `GeneratedOfferLetter/` stores generated PDFs and compiled output.
-- The frontend API client lives in `frontend/src/api/client.js` and is used across the app.
-- Notifications are polled from the client, so the UI updates even when WebSocket support is not present.
+- [backend/public/images/offerletter/](backend/public/images/offerletter/) stores the static image assets used by the PDF templates.
+- [backend/GeneratedOfferLetter/](backend/GeneratedOfferLetter/) stores generated PDFs and compiled output.
+- [frontend/src/api/client.js](frontend/src/api/client.js) is the shared API client used across the React app.
+- Notifications are polled from the client, so the UI stays updated without requiring WebSocket support.
+- If SMTP is not configured, contract invitation and OTP delivery fall back to backend console output in development.
+- `CONTRACT_MASTER_KEY` should be a base64-encoded 32-byte value in production.
 
 ## Troubleshooting
 
-### MongoDB connection errors
+### MongoDB connection issues
 
-- Check `MONGODB_URI`
-- Confirm your Atlas IP is whitelisted
-- Verify `MONGODB_DB_NAME` matches the target database
-- If MongoDB is offline, the backend enters degraded mode and database-backed endpoints will respond with `503`
+- Confirm `MONGODB_URI` is correct.
+- Check that the Atlas IP allowlist includes your machine if you are using MongoDB Atlas.
+- Verify `MONGODB_DB_NAME` matches the target database name.
+- If MongoDB is unavailable, the backend still starts, but database-backed routes respond with `503`.
 
-### PDF generation errors
+### PDF generation issues
 
-- Confirm `wkhtmltopdf` is installed
-- Check that `WKHTMLTOPDF_PATH` is correct on Windows
-- Verify the offer-letter template images exist in `backend/public/images/offerletter/`
-- Make sure `BASE_URL` points to a reachable backend host
+- Confirm `wkhtmltopdf` is installed.
+- Check that `WKHTMLTOPDF_PATH` points to the correct executable on Windows.
+- Make sure the offer-letter assets exist under [backend/public/images/offerletter/](backend/public/images/offerletter/).
+- Verify `BASE_URL` points to a reachable backend host.
+
+### Contract email or OTP issues
+
+- Confirm `FRONTEND_URL` matches the frontend host used by recipients.
+- Check `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and `SMTP_FROM`.
+- If SMTP is disabled, inspect the backend console for the generated link or OTP message.
+- Confirm the OTP has not expired and the resend limit has not been exceeded.
+- In production, HTTPS is required for secure cookies to work as expected.
+
+### Contract acceptance issues
+
+- The typed name must match the worker name, ignoring case and extra spacing.
+- Every contract page must be viewed before the accept button is enabled.
+- Both consent checkboxes are required.
+- Expired, revoked, consumed, or already accepted invitations cannot be reused.
 
 ### Notification issues
 
-- Confirm RabbitMQ is running
-- Verify `RABBITMQ_URL` and `RABBITMQ_QUEUE_NAME`
-- Check `RABBITMQ_BROADCAST_EXCHANGE` if broadcasts are not appearing
+- Confirm RabbitMQ is running.
+- Verify `RABBITMQ_URL` and `RABBITMQ_QUEUE_NAME`.
+- Check `RABBITMQ_BROADCAST_EXCHANGE` if broadcasts are not appearing.
 
 ### Port already in use
 
-- Another backend instance is probably already running on port `5000`
-- Stop the existing process or change `PORT` in `.env`
+- Another backend instance is probably already running on port `5000`.
+- Stop the existing process or change `PORT` in `backend/.env`.
+
+## Quick Start
+
+If you already have dependencies installed and environment variables configured:
+
+```bash
+cd backend
+npm start
+```
+
+In a second terminal:
+
+```bash
+cd frontend
+npm start
+```
+
+Then sign in with one of the seeded accounts and open the dashboard.

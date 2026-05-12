@@ -17,27 +17,32 @@ function OfferLetter() {
   const [salaryType, setSalaryType] = useState("");
   const [salaryAmount, setSalaryAmount] = useState("");
   const [loading, setLoading] = useState(false);
+  const [contractLoading, setContractLoading] = useState(false);
   const [error, setError] = useState("");
   const [pdfPath, setPdfPath] = useState("");
   const [showNotification, setShowNotification] = useState(false);
+
+  function buildRequestPayload() {
+    return {
+      name,
+      gender,
+      internType,
+      durationType,
+      duration,
+      role,
+      startDate,
+      endDate,
+      salaryType,
+      salaryAmount
+    };
+  }
 
   async function generateOfferLetter() {
     try {
       setLoading(true);
       setError("");
 
-      const response = await apiClient.post('/api/offerletter/generate', {
-        name,
-        gender,
-        internType,
-        durationType,
-        duration,
-        role,
-        startDate,
-        endDate,
-        salaryType,
-        salaryAmount
-      });
+      const response = await apiClient.post('/api/offerletter/generate', buildRequestPayload());
 
       console.log(response.data);
 
@@ -52,6 +57,29 @@ function OfferLetter() {
       setError('Failed to generate offer letter. Please try again.');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function generateContract() {
+    try {
+      setContractLoading(true);
+      setError("");
+
+      const response = await apiClient.post('/api/contracts/template', buildRequestPayload());
+      const contractData = response.data.data;
+
+      navigate('/advanced-editor', {
+        state: {
+          mode: 'contract',
+          pages: contractData.pages,
+          metadata: contractData.metadata
+        }
+      });
+    } catch (err) {
+      console.error('Error generating contract:', err);
+      setError(err.response?.data?.message || 'Failed to generate contract. Please try again.');
+    } finally {
+      setContractLoading(false);
     }
   }
 
@@ -181,6 +209,10 @@ function OfferLetter() {
 
         <button onClick={() => generateOfferLetter()} disabled={loading} className="generate-btn">
           {loading ? 'Generating...' : 'Generate Offer Letter'}
+        </button>
+
+        <button onClick={() => generateContract()} disabled={contractLoading} className="generate-btn">
+          {contractLoading ? 'Generating Contract...' : 'Generate Contract'}
         </button>
 
         <button onClick={() => openAdvancedEditor()} className="advanced-btn">

@@ -2,6 +2,7 @@ import { BROADCAST_EXCHANGE } from './queueNames.js';
 import { getRabbitMQConnection } from './rabbitmqConnection.js';
 import Notification from '../../models/notificationModel.js';
 import User from '../../models/userModel.js';
+import { ROLE_CEO, ROLE_HR } from '../../constants/roles.js';
 
 let consumerChannel = null;
 
@@ -52,7 +53,11 @@ async function handleBroadcastMessage(envelope) {
     const { payload } = envelope;
 
     // Fetch all user IDs — we need to fan out to every member
-    const users = await User.find({}, '_id').lean();
+    const isContractAccepted = payload?.metadata?.type === 'CONTRACT_ACCEPTED';
+    const users = await User.find(
+        isContractAccepted ? { role: { $in: [ROLE_CEO, ROLE_HR] } } : {},
+        '_id'
+    ).lean();
 
     if (!users.length) {
         console.warn('[BroadcastConsumer] No users found — notification not saved');
@@ -68,7 +73,7 @@ async function handleBroadcastMessage(envelope) {
         sentBy: payload.sentBy || null,
         sentAt: payload.sentAt ? new Date(payload.sentAt) : new Date(),
         metadata: payload.metadata || {},
-        readBy: []
+        readAt: null
     }));
 
     await Notification.insertMany(docs, { ordered: false });
