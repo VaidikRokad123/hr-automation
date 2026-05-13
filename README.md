@@ -165,21 +165,26 @@ The offer-letter module supports:
 - opening the generated document in a new tab
 - launching the advanced editor after generation
 
-### Advanced editor
+### Advanced editors
 
-The advanced editor in [frontend/src/modules/OfferLetter/AdvancedEditor.js](frontend/src/modules/OfferLetter/AdvancedEditor.js) is used for offer letters and contract drafting.
+Offer letters and contracts use separate advanced editors:
 
-It supports:
+- [frontend/src/modules/OfferLetter/OfferLetterAdvancedEditor.js](frontend/src/modules/OfferLetter/OfferLetterAdvancedEditor.js) edits offer-letter pages and compiles them back into a PDF.
+- [frontend/src/modules/Contract/ContractAdvancedEditor.js](frontend/src/modules/Contract/ContractAdvancedEditor.js) edits worker-specific contract drafts before HR sends them.
 
-- loading backend offer-letter page data
+The contract editor supports:
+
+- loading backend-generated contract page data
 - creating and deleting pages
 - adding and editing paragraphs
-- moving, splitting, and removing content blocks
+- moving, manually splitting, and removing content blocks
 - changing paragraph types
 - uploading images
 - auto-rebalancing content across pages when the document overflows
-- compiling the edited pages back into a PDF
-- switching into contract mode to generate a worker-specific contract draft
+- keeping paragraphs intact during auto-rebalance so a paragraph moves to the next page instead of being split
+- showing an Employee PDF View that uses the same contract page styling as the worker-facing viewer
+
+The Employee PDF View in the contract editor shows all contract pages vertically in a scrollable up/down preview. The printed page labels inside each sheet are hidden in both the editor preview and recipient viewer, while navigation and page-review progress remain available outside the page body.
 
 ### Contract acceptance flow
 
@@ -195,7 +200,7 @@ The flow works like this:
 6. The recipient confirms electronic delivery consent, agreement consent, and typed full name.
 7. The acceptance payload is posted to the backend, which stores the signed result and audit evidence.
 
-The review screen also shows page progress, uses a contract viewer module, and blocks acceptance until all required checks are complete.
+The review screen also shows page progress, uses the contract viewer module in [frontend/src/modules/Contract/ContractViewer.js](frontend/src/modules/Contract/ContractViewer.js), and blocks acceptance until all required checks are complete. Contract paragraphs are styled to avoid page breaks inside paragraph blocks.
 
 ## Local Setup
 
