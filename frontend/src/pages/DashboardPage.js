@@ -44,7 +44,7 @@ export default function DashboardPage() {
     };
 
     const startContractForWorker = (worker) => {
-        navigate('/advanced-editor', {
+        navigate('/contract-editor', {
             state: {
                 mode: 'contract',
                 worker

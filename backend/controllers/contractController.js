@@ -34,6 +34,7 @@ import {
     sendContractOtpEmail
 } from '../services/contractEmailService.js';
 import { publishBroadcast } from '../services/messaging/broadcastPublisher.js';
+import { isRabbitMQEnabled } from '../services/messaging/rabbitmqConnection.js';
 import { buildEmploymentAgreementStructuredData } from '../services/contractTemplateBuilder.js';
 import { replaceVariables } from '../services/offerLetter/pdfTemplateBuilder.js';
 
@@ -43,7 +44,7 @@ function getTokenExpiry() {
 }
 
 function getClientIp(req) {
-    return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || req.ip;
+    return req.ip || req.socket.remoteAddress || '';
 }
 
 function normalizeName(name = '') {
@@ -497,26 +498,35 @@ export async function acceptCurrentContract(req, res) {
 
         await User.updateOne({ _id: worker._id }, { onboardingStatus: 'contract_accepted' });
 
-        try {
-            await publishBroadcast({
-                payload: {
-                    title: 'Contract accepted',
-                    message: `${worker.name} has accepted the employment contract.`,
-                    priority: 'high',
-                    sentBy: contract.createdBy || null,
-                    sentAt: acceptedAt.toISOString(),
-                    metadata: {
-                        type: 'CONTRACT_ACCEPTED',
-                        contractId: contract._id.toString(),
-                        workerId: worker._id.toString(),
-                        workerName: worker.name,
-                        workerEmail: worker.email,
-                        acceptedAt: acceptedAt.toISOString()
+        if (isRabbitMQEnabled()) {
+            try {
+                await publishBroadcast({
+                    payload: {
+                        title: 'Contract accepted',
+                        message: `${worker.name} has accepted the employment contract.`,
+                        priority: 'high',
+                        sentBy: contract.createdBy || null,
+                        sentAt: acceptedAt.toISOString(),
+                        metadata: {
+                            type: 'CONTRACT_ACCEPTED',
+                            contractId: contract._id.toString(),
+                            workerId: worker._id.toString(),
+                            workerName: worker.name,
+                            workerEmail: worker.email,
+                            acceptedAt: acceptedAt.toISOString()
+                        }
                     }
+                });
+            } catch (error) {
+                console.warn('[Contracts] RabbitMQ notification failed:', error.message);
+                try {
+                    const { count } = await saveContractAcceptedNotification({ worker, contract, acceptedAt });
+                    console.log(`[Contracts] Saved acceptance notification for ${count} CEO/HR user(s)`);
+                } catch (dbError) {
+                    console.error('[Contracts] Failed to save acceptance notification:', dbError.message);
                 }
-            });
-        } catch (error) {
-            console.warn('[Contracts] RabbitMQ notification failed:', error.message);
+            }
+        } else {
             try {
                 const { count } = await saveContractAcceptedNotification({ worker, contract, acceptedAt });
                 console.log(`[Contracts] Saved acceptance notification for ${count} CEO/HR user(s)`);

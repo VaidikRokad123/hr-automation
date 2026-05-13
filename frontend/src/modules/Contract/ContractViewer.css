@@ -1,0 +1,285 @@
+.contract-review-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #d9e2ec;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+}
+
+.contract-review-header h1 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.contract-review-header p {
+  margin: 4px 0 0;
+  color: #627d98;
+}
+
+.contract-progress-pill {
+  align-self: center;
+  border: 1px solid #bcccdc;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  color: #243b53;
+  font-weight: 700;
+}
+
+.contract-viewer-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  width: min(1240px, calc(100% - 24px));
+  margin: 24px auto 0;
+  user-select: none;
+}
+
+.contract-page-stage {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+.contract-page-stage::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: calc(297mm * var(--contract-page-scale, 1));
+}
+
+.contract-pages {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.contract-page-controls {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  margin-top: 18px;
+}
+
+.contract-page-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.contract-page {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  right: auto;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0;
+  padding: 38mm 25mm 18mm;
+  box-sizing: border-box;
+  background: #ffffff;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  border: 1px solid #d9e2ec;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  font-family: Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.5;
+  transform: translateX(-50%) scale(var(--contract-page-scale, 1));
+  transform-origin: top center;
+}
+
+.contract-page-number {
+  position: absolute;
+  right: 18mm;
+  bottom: 24mm;
+  color: #9fb3c8;
+  font-size: 9pt;
+}
+
+.contract-page-chip {
+  border: 1px solid #bcccdc;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  color: #52606d;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.contract-page-chip.visited {
+  background: #e8f6ee;
+  border-color: #b9e2c6;
+  color: #147d64;
+}
+
+.contract-page-chip.unvisited {
+  background: #f1f5f9;
+  border-color: #d9e2ec;
+  color: #7b8794;
+}
+
+.contract-page-chip.current {
+  background: #1f4e79;
+  border-color: #1f4e79;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(31, 78, 121, 0.18);
+}
+
+.contract-viewer-date {
+  margin: 0 0 6mm;
+  text-align: right;
+  white-space: nowrap;
+  page-break-inside: avoid;
+  break-inside: avoid-page;
+}
+
+.contract-viewer-to {
+  margin-bottom: 4mm;
+  white-space: pre-wrap;
+  page-break-inside: avoid;
+  break-inside: avoid-page;
+}
+
+.contract-viewer-subject {
+  margin: 4mm 0;
+  text-align: center;
+  font-weight: 700;
+  page-break-inside: avoid;
+  break-inside: avoid-page;
+}
+
+.contract-viewer-paragraph {
+  margin: 0 0 4mm;
+  text-align: justify;
+  white-space: pre-wrap;
+  page-break-inside: avoid;
+  break-inside: avoid-page;
+}
+
+.contract-viewer-paragraph p,
+.contract-viewer-signature p,
+.contract-viewer-company p,
+.contract-viewer-to p,
+.contract-viewer-subject p {
+  margin: 0 0 3mm;
+}
+
+.contract-viewer-paragraph ul,
+.contract-viewer-paragraph ol,
+.contract-viewer-signature ul,
+.contract-viewer-signature ol {
+  margin: 2mm 0 4mm 7mm;
+  padding: 0;
+}
+
+.contract-viewer-paragraph li,
+.contract-viewer-signature li {
+  margin-bottom: 1.5mm;
+}
+
+.contract-viewer-signature,
+.contract-viewer-company,
+.contract-viewer-separator {
+  margin: 6mm 0 4mm;
+  white-space: pre-wrap;
+  page-break-inside: avoid;
+  break-inside: avoid-page;
+}
+
+.contract-viewer-separator {
+  text-align: center;
+}
+
+.contract-viewer-image {
+  margin: 10mm 0;
+  page-break-inside: avoid;
+  break-inside: avoid-page;
+}
+
+.contract-viewer-image img {
+  display: block;
+  width: 100%;
+  max-height: 55mm;
+  object-fit: contain;
+}
+
+.contract-watermark {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 60px 20px;
+  overflow: hidden;
+  opacity: 0.075;
+}
+
+.contract-watermark span {
+  align-self: center;
+  justify-self: center;
+  transform: rotate(-28deg);
+  color: #1f4e79;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.contract-id-note {
+  text-align: center;
+  color: #829ab1;
+  font-size: 0.9rem;
+}
+
+.contract-secondary-btn {
+  background: #eef2f7 !important;
+  color: #243b53 !important;
+}
+
+@media (max-width: 900px) {
+  .contract-viewer-wrap {
+    grid-template-columns: 1fr;
+    width: min(100%, calc(100vw - 16px));
+    margin-top: 16px;
+  }
+
+  .contract-viewer-date {
+    margin-left: 0;
+    text-align: right;
+  }
+
+  .contract-acceptance-bar {
+    width: 100%;
+  }
+
+  .contract-page-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .contract-pages,
+  .contract-viewer-wrap {
+    display: none !important;
+  }
+
+  .contract-acceptance-page::before {
+    content: "Printing is disabled for this secure contract viewer.";
+    display: block;
+    padding: 24px;
+  }
+}

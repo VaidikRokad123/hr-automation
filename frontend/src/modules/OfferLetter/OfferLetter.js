@@ -68,7 +68,7 @@ function OfferLetter() {
       const response = await apiClient.post('/api/contracts/template', buildRequestPayload());
       const contractData = response.data.data;
 
-      navigate('/advanced-editor', {
+      navigate('/contract-editor', {
         state: {
           mode: 'contract',
           pages: contractData.pages,
@@ -99,7 +99,7 @@ function OfferLetter() {
       return;
     }
 
-    navigate('/advanced-editor', { state: { pdfUrl: pdfPath } });
+    navigate('/offer-letter-editor', { state: { pdfUrl: pdfPath, mode: 'offer' } });
   }
 
   return (

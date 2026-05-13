@@ -1,0 +1,138 @@
+.contract-acceptance-page {
+  min-height: 100vh;
+  background: #f5f7fb;
+  color: #111827;
+}
+
+.contract-access-panel,
+.contract-success-panel,
+.contract-error-panel {
+  width: min(560px, calc(100% - 32px));
+  margin: 72px auto;
+  padding: 28px;
+  border: 1px solid #d9e2ec;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.contract-access-panel h1,
+.contract-success-panel h1,
+.contract-error-panel h1 {
+  margin: 0 0 10px;
+  font-size: 1.8rem;
+}
+
+.contract-access-panel p,
+.contract-success-panel p,
+.contract-error-panel p {
+  color: #52606d;
+  line-height: 1.6;
+}
+
+.contract-access-panel form {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.contract-access-panel input,
+.contract-acceptance-bar input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #bcccdc;
+  border-radius: 6px;
+  padding: 11px 12px;
+  font: inherit;
+}
+
+.contract-access-panel button,
+.contract-acceptance-bar button,
+.contract-error-panel button {
+  border: 0;
+  border-radius: 6px;
+  padding: 11px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #1f4e79;
+  color: #ffffff;
+}
+
+.contract-access-panel button:disabled,
+.contract-acceptance-bar button:disabled {
+  cursor: not-allowed;
+  background: #9fb3c8;
+}
+
+.contract-inline-error {
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.contract-acceptance-bar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  align-items: stretch;
+  width: min(100%, 920px);
+  margin: 18px auto 24px;
+  padding: 18px;
+  border-top: 1px solid #bcccdc;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 -14px 36px rgba(15, 23, 42, 0.12);
+}
+
+.contract-signature-box {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.contract-signature-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.contract-signature-canvas {
+  width: 100%;
+  height: 260px;
+  border: 1px solid #bcccdc;
+  border-radius: 12px;
+  background: #fff;
+  touch-action: none;
+}
+
+.contract-signature-help {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #52606d;
+}
+
+.contract-checkboxes {
+  display: grid;
+  gap: 6px;
+}
+
+.contract-checkboxes label {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: #243b53;
+  font-size: 0.9rem;
+}
+
+.contract-checkboxes input {
+  width: auto;
+  margin-top: 3px;
+}
+
+@media (max-width: 900px) {
+  .contract-acceptance-bar {
+    width: 100%;
+  }
+}

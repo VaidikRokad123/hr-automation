@@ -1,11 +1,26 @@
 import amqp from 'amqplib';
 
-const DEFAULT_RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://127.0.0.1';
-
 let connectionPromise = null;
 
+export function isRabbitMQEnabled() {
+    const enabled = String(process.env.RABBITMQ_ENABLED || '').trim().toLowerCase();
+    if (['false', '0', 'off', 'no'].includes(enabled)) {
+        return false;
+    }
+
+    return Boolean(process.env.RABBITMQ_URL);
+}
+
+export function getRabbitMQUrl() {
+    return process.env.RABBITMQ_URL;
+}
+
 async function createConnection() {
-    const connection = await amqp.connect(DEFAULT_RABBITMQ_URL);
+    if (!isRabbitMQEnabled()) {
+        throw new Error('RabbitMQ is disabled. Set RABBITMQ_ENABLED=true and RABBITMQ_URL to enable queue-backed notifications.');
+    }
+
+    const connection = await amqp.connect(getRabbitMQUrl());
 
     connection.once('close', () => {
         connectionPromise = null;

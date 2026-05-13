@@ -1,4 +1,4 @@
-.AdvancedEditor {
+.OfferLetterAdvancedEditor {
   min-height: 100vh;
   background: #f7fafc;
   display: flex;
@@ -392,6 +392,9 @@
   font-size: 0.75rem;
   color: #718096;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .editor-content {
@@ -740,11 +743,11 @@
   }
 }
 
-.AdvancedEditor {
+.OfferLetterAdvancedEditor {
   background: var(--bg);
 }
 
-.AdvancedEditor .editor-container {
+.OfferLetterAdvancedEditor .editor-container {
   align-items: flex-start;
   gap: 16px;
   padding: 16px;
@@ -752,206 +755,213 @@
   margin: 0 auto;
 }
 
-.AdvancedEditor .sidebar,
-.AdvancedEditor .editor-area,
-.AdvancedEditor .loading-container,
-.AdvancedEditor .error-container,
-.AdvancedEditor .editor-header,
-.AdvancedEditor .paragraph-editor,
-.AdvancedEditor .preview-section {
+.OfferLetterAdvancedEditor .sidebar,
+.OfferLetterAdvancedEditor .editor-area,
+.OfferLetterAdvancedEditor .loading-container,
+.OfferLetterAdvancedEditor .error-container,
+.OfferLetterAdvancedEditor .editor-header,
+.OfferLetterAdvancedEditor .paragraph-editor,
+.OfferLetterAdvancedEditor .preview-section {
   background: #ffffff;
   border: 1px solid var(--line);
   box-shadow: 0 10px 30px rgba(31, 41, 51, 0.08);
 }
 
 /* Ocean Depths theme overrides */
-.AdvancedEditor {
+.OfferLetterAdvancedEditor {
   background: var(--bg);
   color: var(--text);
 }
 
-.AdvancedEditor .editor-header,
-.AdvancedEditor .sidebar,
-.AdvancedEditor .editor-area,
-.AdvancedEditor .loading-container,
-.AdvancedEditor .error-container,
-.AdvancedEditor .paragraph-editor,
-.AdvancedEditor .preview-section {
+.OfferLetterAdvancedEditor .editor-header,
+.OfferLetterAdvancedEditor .sidebar,
+.OfferLetterAdvancedEditor .editor-area,
+.OfferLetterAdvancedEditor .loading-container,
+.OfferLetterAdvancedEditor .error-container,
+.OfferLetterAdvancedEditor .paragraph-editor,
+.OfferLetterAdvancedEditor .preview-section {
   background: rgba(255, 255, 255, 0.84);
   border: 1px solid rgba(255, 255, 255, 0.46);
   box-shadow: var(--shadow-soft);
   backdrop-filter: blur(18px);
 }
 
-.AdvancedEditor .editor-header h1,
-.AdvancedEditor .sidebar-section h3,
-.AdvancedEditor .editor-toolbar h2,
-.AdvancedEditor .error-container h2 {
+.OfferLetterAdvancedEditor .editor-header h1,
+.OfferLetterAdvancedEditor .sidebar-section h3,
+.OfferLetterAdvancedEditor .editor-toolbar h2,
+.OfferLetterAdvancedEditor .error-container h2 {
   font-family: 'Cormorant Garamond', serif;
   color: var(--text);
 }
 
-.AdvancedEditor .back-btn,
-.AdvancedEditor .compile-btn,
-.AdvancedEditor .download-btn,
-.AdvancedEditor .add-page-btn,
-.AdvancedEditor .tool-btn,
-.AdvancedEditor .move-btn,
-.AdvancedEditor .split-btn {
+.OfferLetterAdvancedEditor .back-btn,
+.OfferLetterAdvancedEditor .compile-btn,
+.OfferLetterAdvancedEditor .download-btn,
+.OfferLetterAdvancedEditor .add-page-btn,
+.OfferLetterAdvancedEditor .tool-btn,
+.OfferLetterAdvancedEditor .move-btn,
+.OfferLetterAdvancedEditor .split-btn {
   color: #fff;
   background: linear-gradient(135deg, var(--accent-2), var(--accent));
 }
 
-.AdvancedEditor .rebalance-btn {
+.OfferLetterAdvancedEditor .rebalance-btn {
   background: linear-gradient(135deg, #12324a, #0f6b7b);
 }
 
-.AdvancedEditor .delete-btn {
+.OfferLetterAdvancedEditor .delete-btn {
   background: linear-gradient(135deg, #b84f47, #d66a5f);
 }
 
-.AdvancedEditor .page-item {
+.OfferLetterAdvancedEditor .page-item {
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(15, 34, 54, 0.08);
 }
 
-.AdvancedEditor .page-item.active {
+.OfferLetterAdvancedEditor .page-item.active {
   background: rgba(27, 142, 165, 0.1);
   border-color: rgba(27, 142, 165, 0.42);
 }
 
-.AdvancedEditor .variable-btn {
+.OfferLetterAdvancedEditor .variable-btn {
   background: rgba(27, 142, 165, 0.08);
   color: var(--accent-2);
   border-color: rgba(27, 142, 165, 0.18);
 }
 
-.AdvancedEditor .variable-btn:hover {
+.OfferLetterAdvancedEditor .variable-btn:hover {
   background: rgba(27, 142, 165, 0.14);
   border-color: rgba(27, 142, 165, 0.28);
 }
 
-.AdvancedEditor .type-selector,
-.AdvancedEditor .paragraph-editor textarea {
+.OfferLetterAdvancedEditor .type-selector,
+.OfferLetterAdvancedEditor .paragraph-editor textarea {
   border-color: rgba(15, 34, 54, 0.14);
   background: rgba(255, 255, 255, 0.9);
 }
 
-.AdvancedEditor .type-selector:focus,
-.AdvancedEditor .paragraph-editor textarea:focus {
+.OfferLetterAdvancedEditor .type-selector:focus,
+.OfferLetterAdvancedEditor .paragraph-editor textarea:focus {
   border-color: rgba(27, 142, 165, 0.72);
   box-shadow: 0 0 0 3px rgba(27, 142, 165, 0.12);
 }
 
-.AdvancedEditor .capacity-bar {
+.OfferLetterAdvancedEditor .capacity-bar {
   background: rgba(15, 34, 54, 0.1);
 }
 
-.AdvancedEditor .capacity-fill {
+.OfferLetterAdvancedEditor .capacity-fill {
   background: linear-gradient(90deg, var(--accent-2), var(--accent));
 }
 
-.AdvancedEditor .capacity-fill.warning {
+.OfferLetterAdvancedEditor .capacity-fill.warning {
   background: linear-gradient(90deg, #b9862d, #d3a44b);
 }
 
-.AdvancedEditor .capacity-fill.overflow {
+.OfferLetterAdvancedEditor .capacity-fill.overflow {
   background: linear-gradient(90deg, #c04f46, #df6f66);
 }
 
-.AdvancedEditor .editor-content::-webkit-scrollbar-track,
-.AdvancedEditor .sidebar::-webkit-scrollbar-track,
-.AdvancedEditor .pdf-preview::-webkit-scrollbar-track {
+.OfferLetterAdvancedEditor .editor-content::-webkit-scrollbar-track,
+.OfferLetterAdvancedEditor .sidebar::-webkit-scrollbar-track,
+.OfferLetterAdvancedEditor .pdf-preview::-webkit-scrollbar-track {
   background: rgba(15, 34, 54, 0.06);
 }
 
-.AdvancedEditor .editor-content::-webkit-scrollbar-thumb,
-.AdvancedEditor .sidebar::-webkit-scrollbar-thumb,
-.AdvancedEditor .pdf-preview::-webkit-scrollbar-thumb {
+.OfferLetterAdvancedEditor .editor-content::-webkit-scrollbar-thumb,
+.OfferLetterAdvancedEditor .sidebar::-webkit-scrollbar-thumb,
+.OfferLetterAdvancedEditor .pdf-preview::-webkit-scrollbar-thumb {
   background: rgba(27, 142, 165, 0.3);
 }
 
-.AdvancedEditor .editor-header {
+.OfferLetterAdvancedEditor .editor-header {
   padding: 16px 24px;
 }
 
-.AdvancedEditor .editor-header h1,
-.AdvancedEditor .editor-toolbar h2,
-.AdvancedEditor .sidebar-section h3,
-.AdvancedEditor .preview-section h3 {
+.OfferLetterAdvancedEditor .editor-header h1,
+.OfferLetterAdvancedEditor .editor-toolbar h2,
+.OfferLetterAdvancedEditor .sidebar-section h3,
+.OfferLetterAdvancedEditor .preview-section h3 {
   font-family: 'Manrope', sans-serif;
   color: var(--text);
 }
 
-.AdvancedEditor .back-btn,
-.AdvancedEditor .compile-btn,
-.AdvancedEditor .download-btn,
-.AdvancedEditor .add-page-btn,
-.AdvancedEditor .tool-btn,
-.AdvancedEditor .move-btn,
-.AdvancedEditor .split-btn,
-.AdvancedEditor .delete-btn,
-.AdvancedEditor .variable-btn {
+.OfferLetterAdvancedEditor .back-btn,
+.OfferLetterAdvancedEditor .compile-btn,
+.OfferLetterAdvancedEditor .download-btn,
+.OfferLetterAdvancedEditor .add-page-btn,
+.OfferLetterAdvancedEditor .tool-btn,
+.OfferLetterAdvancedEditor .move-btn,
+.OfferLetterAdvancedEditor .split-btn,
+.OfferLetterAdvancedEditor .delete-btn,
+.OfferLetterAdvancedEditor .variable-btn {
   border-radius: 12px;
 }
 
-.AdvancedEditor .back-btn {
+.OfferLetterAdvancedEditor .back-btn {
   background: #f1f5f9;
   color: var(--text);
 }
 
-.AdvancedEditor .back-btn:hover {
+.OfferLetterAdvancedEditor .back-btn:hover {
   background: #e2e8f0;
 }
 
-.AdvancedEditor .compile-btn,
-.AdvancedEditor .add-page-btn,
-.AdvancedEditor .tool-btn,
-.AdvancedEditor .move-btn {
+.OfferLetterAdvancedEditor .compile-btn,
+.OfferLetterAdvancedEditor .add-page-btn,
+.OfferLetterAdvancedEditor .tool-btn,
+.OfferLetterAdvancedEditor .move-btn {
   background: #31506d;
 }
 
-.AdvancedEditor .download-btn,
-.AdvancedEditor .split-btn {
+.OfferLetterAdvancedEditor .download-btn,
+.OfferLetterAdvancedEditor .split-btn {
   background: #4b6b84;
 }
 
-.AdvancedEditor .delete-btn {
+.OfferLetterAdvancedEditor .delete-btn {
   background: #94a3b8;
 }
 
-.AdvancedEditor .page-item,
-.AdvancedEditor .paragraph-editor,
-.AdvancedEditor .variable-btn,
-.AdvancedEditor .type-selector,
-.AdvancedEditor .pdf-preview {
+.OfferLetterAdvancedEditor .page-item,
+.OfferLetterAdvancedEditor .paragraph-editor,
+.OfferLetterAdvancedEditor .variable-btn,
+.OfferLetterAdvancedEditor .type-selector,
+.OfferLetterAdvancedEditor .pdf-preview {
   border-color: var(--line);
 }
 
-.AdvancedEditor .page-item.active {
+.OfferLetterAdvancedEditor .page-item.active {
   border-color: #31506d;
   background: #eef2f6;
 }
 
-.AdvancedEditor .capacity-fill,
-.AdvancedEditor .capacity-label {
+.OfferLetterAdvancedEditor .capacity-fill {
   background: #31506d;
 }
-  min-height: 520px;
-.AdvancedEditor .capacity-fill.warning,
-.AdvancedEditor .capacity-label.warning {
+
+.OfferLetterAdvancedEditor .capacity-label {
+  background: transparent;
+}
+
+.OfferLetterAdvancedEditor .capacity-fill.warning {
   background: #b7791f;
+}
+
+.OfferLetterAdvancedEditor .capacity-label.warning {
   color: #b7791f;
 }
 
-.AdvancedEditor .capacity-fill.overflow,
-.AdvancedEditor .capacity-label.overflow {
-  min-height: 520px;
+.OfferLetterAdvancedEditor .capacity-fill.overflow {
+  background: #b91c1c;
+}
+
+.OfferLetterAdvancedEditor .capacity-label.overflow {
   color: #b91c1c;
 }
 
-.AdvancedEditor .editor-content,
-.AdvancedEditor .sidebar {
+.OfferLetterAdvancedEditor .editor-content,
+.OfferLetterAdvancedEditor .sidebar {
   scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
@@ -961,7 +971,7 @@
   }
   padding: 72px 44px 88px;
 
-.AdvancedEditor {
+.OfferLetterAdvancedEditor {
   min-height: 100vh;
   position: relative;
   display: flex;
@@ -970,7 +980,7 @@
   background: var(--bg);
 }
 
-.AdvancedEditor .notification-popup {
+.OfferLetterAdvancedEditor .notification-popup {
   position: fixed;
   bottom: 20px;
   word-break: break-word;
@@ -985,16 +995,16 @@
   box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 20px rgba(52, 211, 153, 0.1);
 }
 
-  .AdvancedEditor .paragraph-header {
+  .OfferLetterAdvancedEditor .paragraph-header {
     grid-template-columns: 1fr;
   }
 
-  .AdvancedEditor .paragraph-actions {
+  .OfferLetterAdvancedEditor .paragraph-actions {
     justify-content: flex-start;
   }
 
-.AdvancedEditor .loading-container,
-.AdvancedEditor .error-container {
+.OfferLetterAdvancedEditor .loading-container,
+.OfferLetterAdvancedEditor .error-container {
   min-height: 100vh;
   display: grid;
   place-items: center;
@@ -1002,7 +1012,7 @@
   text-align: center;
 }
 
-.AdvancedEditor .error-banner {
+.OfferLetterAdvancedEditor .error-banner {
   margin: 0 20px 18px;
   border-radius: 16px;
   border: 1px solid rgba(248, 113, 113, 0.2);
@@ -1012,7 +1022,7 @@
   text-align: center;
 }
 
-.AdvancedEditor .editor-header {
+.OfferLetterAdvancedEditor .editor-header {
   position: sticky;
   top: 0;
   z-index: 100;
@@ -1027,54 +1037,54 @@
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
 }
 
-.AdvancedEditor .editor-header h1,
-.AdvancedEditor .editor-toolbar h2,
-.AdvancedEditor .sidebar-section h3,
-.AdvancedEditor .preview-section h3 {
+.OfferLetterAdvancedEditor .editor-header h1,
+.OfferLetterAdvancedEditor .editor-toolbar h2,
+.OfferLetterAdvancedEditor .sidebar-section h3,
+.OfferLetterAdvancedEditor .preview-section h3 {
   font-family: 'Syne', sans-serif;
   letter-spacing: -0.02em;
   color: var(--text);
 }
 
-.AdvancedEditor .editor-header h1 {
+.OfferLetterAdvancedEditor .editor-header h1 {
   margin: 0;
   font-size: clamp(2rem, 2.8vw, 3rem);
 }
 
-.AdvancedEditor .header-actions {
+.OfferLetterAdvancedEditor .header-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
 
-.AdvancedEditor .back-btn,
-.AdvancedEditor .compile-btn,
-.AdvancedEditor .download-btn {
+.OfferLetterAdvancedEditor .back-btn,
+.OfferLetterAdvancedEditor .compile-btn,
+.OfferLetterAdvancedEditor .download-btn {
   padding: 12px 16px;
 }
 
-.AdvancedEditor .back-btn {
+.OfferLetterAdvancedEditor .back-btn {
   background: rgba(255,255,255,0.07);
   color: var(--text-soft);
   border: 1px solid var(--line-strong);
 }
 
-.AdvancedEditor .compile-btn {
+.OfferLetterAdvancedEditor .compile-btn {
   background: linear-gradient(135deg, var(--accent-2), var(--accent));
 }
 
-.AdvancedEditor .download-btn {
+.OfferLetterAdvancedEditor .download-btn {
   background: linear-gradient(135deg, #059669, #34d399);
 }
 
-.AdvancedEditor .compile-btn:disabled,
-.AdvancedEditor .download-btn:disabled {
+.OfferLetterAdvancedEditor .compile-btn:disabled,
+.OfferLetterAdvancedEditor .download-btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
   transform: none;
 }
 
-.AdvancedEditor .editor-container {
+.OfferLetterAdvancedEditor .editor-container {
   display: grid;
   grid-template-columns: 280px minmax(0, 1.2fr) 380px;
   gap: 18px;
@@ -1084,9 +1094,9 @@
   margin: 0 auto;
 }
 
-.AdvancedEditor .sidebar,
-.AdvancedEditor .editor-area,
-.AdvancedEditor .preview-section {
+.OfferLetterAdvancedEditor .sidebar,
+.OfferLetterAdvancedEditor .editor-area,
+.OfferLetterAdvancedEditor .preview-section {
   border-radius: 20px;
   border: 1px solid var(--line-strong);
   background: var(--surface);
@@ -1094,7 +1104,7 @@
   backdrop-filter: blur(20px);
 }
 
-.AdvancedEditor .sidebar {
+.OfferLetterAdvancedEditor .sidebar {
   position: sticky;
   top: 88px;
   max-height: calc(100vh - 108px);
@@ -1102,54 +1112,54 @@
   padding: 20px;
 }
 
-.AdvancedEditor .sidebar::-webkit-scrollbar,
-.AdvancedEditor .editor-content::-webkit-scrollbar,
-.AdvancedEditor .pdf-preview::-webkit-scrollbar {
+.OfferLetterAdvancedEditor .sidebar::-webkit-scrollbar,
+.OfferLetterAdvancedEditor .editor-content::-webkit-scrollbar,
+.OfferLetterAdvancedEditor .pdf-preview::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
-.AdvancedEditor .sidebar-section {
+.OfferLetterAdvancedEditor .sidebar-section {
   margin-bottom: 24px;
 }
 
-.AdvancedEditor .sidebar-section h3 {
+.OfferLetterAdvancedEditor .sidebar-section h3 {
   margin-bottom: 10px;
   font-size: 1.6rem;
 }
 
-.AdvancedEditor .helper-text {
+.OfferLetterAdvancedEditor .helper-text {
   margin-bottom: 10px;
   font-size: 0.85rem;
   font-style: italic;
   color: var(--muted);
 }
 
-.AdvancedEditor .add-page-btn,
-.AdvancedEditor .tool-btn,
-.AdvancedEditor .variable-btn {
+.OfferLetterAdvancedEditor .add-page-btn,
+.OfferLetterAdvancedEditor .tool-btn,
+.OfferLetterAdvancedEditor .variable-btn {
   width: 100%;
   padding: 11px 12px;
   text-align: left;
 }
 
-.AdvancedEditor .add-page-btn,
-.AdvancedEditor .tool-btn {
+.OfferLetterAdvancedEditor .add-page-btn,
+.OfferLetterAdvancedEditor .tool-btn {
   margin-bottom: 10px;
   background: linear-gradient(135deg, var(--accent-2), var(--accent));
 }
 
-.AdvancedEditor .tool-btn.rebalance-btn {
+.OfferLetterAdvancedEditor .tool-btn.rebalance-btn {
   background: linear-gradient(135deg, var(--accent-3), var(--accent-2));
 }
 
-.AdvancedEditor .pages-list,
-.AdvancedEditor .variables-list {
+.OfferLetterAdvancedEditor .pages-list,
+.OfferLetterAdvancedEditor .variables-list {
   display: grid;
   gap: 8px;
 }
 
-.AdvancedEditor .page-item {
+.OfferLetterAdvancedEditor .page-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1160,13 +1170,13 @@
   color: var(--text-soft);
 }
 
-.AdvancedEditor .page-item.active {
+.OfferLetterAdvancedEditor .page-item.active {
   border-color: rgba(56, 189, 248, 0.42);
   background: rgba(56, 189, 248, 0.07);
   box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
 }
 
-.AdvancedEditor .delete-page-btn {
+.OfferLetterAdvancedEditor .delete-page-btn {
   width: 26px;
   height: 26px;
   border-radius: 999px;
@@ -1176,80 +1186,90 @@
   cursor: pointer;
 }
 
-.AdvancedEditor .variable-btn {
+.OfferLetterAdvancedEditor .variable-btn {
   border: 1px solid rgba(56, 189, 248, 0.18);
   background: rgba(56, 189, 248, 0.06);
   color: var(--accent);
 }
 
-.AdvancedEditor .editor-area {
+.OfferLetterAdvancedEditor .editor-area {
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.AdvancedEditor .editor-toolbar {
+.OfferLetterAdvancedEditor .editor-toolbar {
   padding: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 16px;
   border-bottom: 1px solid var(--line-strong);
+  flex-wrap: wrap;
 }
 
-.AdvancedEditor .editor-toolbar h2 {
+.OfferLetterAdvancedEditor .editor-toolbar h2 {
   margin: 0;
   font-size: 2rem;
 }
 
-.AdvancedEditor .paragraph-count,
-.AdvancedEditor .capacity-text,
-.AdvancedEditor .error-container p,
-.AdvancedEditor .no-pdf,
-.AdvancedEditor .no-content {
+.OfferLetterAdvancedEditor .paragraph-count,
+.OfferLetterAdvancedEditor .capacity-text,
+.OfferLetterAdvancedEditor .error-container p,
+.OfferLetterAdvancedEditor .no-pdf,
+.OfferLetterAdvancedEditor .no-content {
   color: var(--muted);
 }
 
-.AdvancedEditor .page-capacity-indicator {
+.OfferLetterAdvancedEditor .page-capacity-indicator {
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
-  min-width: 250px;
+  min-width: 200px;
+  max-width: 250px;
+  flex-shrink: 0;
 }
 
-.AdvancedEditor .capacity-wrapper {
+.OfferLetterAdvancedEditor .capacity-wrapper {
   display: grid;
   gap: 6px;
   width: 100%;
   justify-items: end;
+  overflow: hidden;
 }
 
-.AdvancedEditor .capacity-label {
-  font-size: 0.82rem;
+.OfferLetterAdvancedEditor .capacity-label {
+  font-size: 0.75rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   color: var(--success);
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: right;
 }
 
-.AdvancedEditor .capacity-label.warning {
+.OfferLetterAdvancedEditor .capacity-label.warning {
   color: var(--warning);
 }
 
-.AdvancedEditor .capacity-label.overflow {
+.OfferLetterAdvancedEditor .capacity-label.overflow {
   color: var(--danger);
   animation: glowPulse 1.5s ease-in-out infinite;
 }
 
-.AdvancedEditor .capacity-bar {
-  width: 220px;
+.OfferLetterAdvancedEditor .capacity-bar {
+  width: 100%;
+  max-width: 220px;
   height: 6px;
   background: rgba(255,255,255,0.08);
   border-radius: 999px;
   overflow: hidden;
 }
 
-.AdvancedEditor .capacity-fill {
+.OfferLetterAdvancedEditor .capacity-fill {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--accent-2), var(--accent));
@@ -1257,17 +1277,17 @@
   box-shadow: 0 0 8px rgba(56,189,248,0.4);
 }
 
-.AdvancedEditor .capacity-fill.warning {
+.OfferLetterAdvancedEditor .capacity-fill.warning {
   background: linear-gradient(90deg, #b45309, var(--warning));
   box-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
 }
 
-.AdvancedEditor .capacity-fill.overflow {
+.OfferLetterAdvancedEditor .capacity-fill.overflow {
   background: linear-gradient(90deg, #991b1b, var(--danger));
   box-shadow: 0 0 8px rgba(248,113,113,0.3);
 }
 
-.AdvancedEditor .editor-content {
+.OfferLetterAdvancedEditor .editor-content {
   flex: 1;
   padding: 20px;
   overflow: auto;
@@ -1276,7 +1296,7 @@
   gap: 14px;
 }
 
-.AdvancedEditor .paragraph-editor {
+.OfferLetterAdvancedEditor .paragraph-editor {
   margin-bottom: 18px;
   padding: 16px;
   border-radius: 20px;
@@ -1285,7 +1305,7 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-.AdvancedEditor .paragraph-header {
+.OfferLetterAdvancedEditor .paragraph-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1293,32 +1313,32 @@
   gap: 10px;
 }
 
-.AdvancedEditor .paragraph-info {
+.OfferLetterAdvancedEditor .paragraph-info {
   display: flex;
   align-items: center;
   gap: 10px;
   flex: 1;
 }
 
-.AdvancedEditor .paragraph-header label {
+.OfferLetterAdvancedEditor .paragraph-header label {
   font-weight: 700;
   color: var(--text);
   white-space: nowrap;
 }
 
-.AdvancedEditor .type-selector {
+.OfferLetterAdvancedEditor .type-selector {
   min-width: 140px;
 }
 
-.AdvancedEditor .paragraph-actions {
+.OfferLetterAdvancedEditor .paragraph-actions {
   display: flex;
   gap: 8px;
   align-items: center;
 }
 
-.AdvancedEditor .move-btn,
-.AdvancedEditor .split-btn,
-.AdvancedEditor .delete-btn {
+.OfferLetterAdvancedEditor .move-btn,
+.OfferLetterAdvancedEditor .split-btn,
+.OfferLetterAdvancedEditor .delete-btn {
   padding: 9px 12px;
   background: rgba(255,255,255,0.05);
   color: var(--text-soft);
@@ -1330,29 +1350,30 @@
   justify-content: center;
 }
 
-.AdvancedEditor .move-btn:disabled {
+.OfferLetterAdvancedEditor .move-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
   transform: none;
 }
 
-.AdvancedEditor .split-btn {
+.OfferLetterAdvancedEditor .split-btn {
   background: rgba(129, 140, 248, 0.1);
   color: var(--accent-2);
   border-color: rgba(129, 140, 248, 0.2);
 }
 
-.AdvancedEditor .delete-btn {
+.OfferLetterAdvancedEditor .delete-btn {
   background: rgba(248, 113, 113, 0.08);
   color: #fca5a5;
   border-color: rgba(248, 113, 113, 0.18);
 }
 
-.AdvancedEditor .paragraph-editor textarea {
+.OfferLetterAdvancedEditor .paragraph-editor textarea {
   width: 100%;
   min-height: 130px;
   margin-top: 12px;
   padding: 13px 15px;
+  padding-top: 20px;
   border: 1px solid var(--line-strong);
   border-radius: 16px;
   resize: vertical;
@@ -1363,21 +1384,21 @@
   color: var(--text);
 }
 
-.AdvancedEditor .paragraph-editor textarea:focus {
+.OfferLetterAdvancedEditor .paragraph-editor textarea:focus {
   outline: none;
   border-color: rgba(56, 189, 248, 0.55);
   box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
   background: rgba(56, 189, 248, 0.04);
 }
 
-.AdvancedEditor .image-preview {
+.OfferLetterAdvancedEditor .image-preview {
   margin-top: 12px;
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid var(--line-strong);
 }
 
-.AdvancedEditor .image-preview img {
+.OfferLetterAdvancedEditor .image-preview img {
   display: block;
   width: 100%;
   max-height: 220px;
@@ -1385,7 +1406,7 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
-.AdvancedEditor .no-content {
+.OfferLetterAdvancedEditor .no-content {
   display: grid;
   place-items: center;
   min-height: 300px;
@@ -1396,13 +1417,13 @@
   background: rgba(56, 189, 248, 0.03);
 }
 
-.AdvancedEditor .no-content p:first-child {
+.OfferLetterAdvancedEditor .no-content p:first-child {
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--text);
 }
 
-.AdvancedEditor .preview-section {
+.OfferLetterAdvancedEditor .preview-section {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -1412,11 +1433,11 @@
   top: 88px;
 }
 
-.AdvancedEditor .preview-section h3 {
+.OfferLetterAdvancedEditor .preview-section h3 {
   font-size: 1.6rem;
 }
 
-.AdvancedEditor .pdf-preview {
+.OfferLetterAdvancedEditor .pdf-preview {
   flex: 1;
   width: 100%;
   min-height: 520px;
@@ -1425,7 +1446,7 @@
   background: #fff;
 }
 
-.AdvancedEditor .contract-editor-preview {
+.OfferLetterAdvancedEditor .contract-editor-preview {
   flex: 1;
   min-height: 520px;
   overflow: auto;
@@ -1435,7 +1456,7 @@
   background: #eef2f6;
 }
 
-.AdvancedEditor .contract-preview-page {
+.OfferLetterAdvancedEditor .contract-preview-page {
   position: relative;
   width: min(100%, 380px);
   min-height: 594px;
@@ -1453,7 +1474,7 @@
   line-height: 1.55;
 }
 
-.AdvancedEditor .contract-preview-page-number {
+.OfferLetterAdvancedEditor .contract-preview-page-number {
   position: absolute;
   right: 16px;
   bottom: 44px;
@@ -1461,59 +1482,71 @@
   font-size: 9px;
 }
 
-.AdvancedEditor .contract-preview-text {
+.OfferLetterAdvancedEditor .contract-preview-text {
   margin-bottom: 10px;
   word-break: break-word;
 }
 
-.AdvancedEditor .contract-preview-text p {
+.OfferLetterAdvancedEditor .contract-preview-text:first-of-type {
+  margin-top: 20px;
+}
+
+.OfferLetterAdvancedEditor .contract-preview-text p {
   margin: 0 0 8px;
 }
 
-.AdvancedEditor .contract-preview-text ul,
-.AdvancedEditor .contract-preview-text ol {
+.OfferLetterAdvancedEditor .contract-preview-text ul,
+.OfferLetterAdvancedEditor .contract-preview-text ol {
   margin: 6px 0 10px 18px;
   padding: 0;
 }
 
-.AdvancedEditor .contract-preview-text li {
+.OfferLetterAdvancedEditor .contract-preview-text li {
   margin-bottom: 4px;
 }
 
-.AdvancedEditor .contract-preview-paragraph,
-.AdvancedEditor .contract-preview-footer {
+.OfferLetterAdvancedEditor .contract-preview-paragraph,
+.OfferLetterAdvancedEditor .contract-preview-footer {
   text-align: justify;
 }
 
-.AdvancedEditor .contract-preview-subject {
+.OfferLetterAdvancedEditor .contract-preview-paragraph:first-of-type {
+  margin-top: 20px;
+}
+
+.OfferLetterAdvancedEditor .contract-preview-subject {
   margin: 14px 0 10px;
   text-align: center;
   font-weight: 700;
   text-transform: uppercase;
 }
 
-.AdvancedEditor .contract-preview-date {
+.OfferLetterAdvancedEditor .contract-preview-subject:first-child {
+  margin-top: 24px;
+}
+
+.OfferLetterAdvancedEditor .contract-preview-date {
   text-align: right;
   white-space: nowrap;
 }
 
-.AdvancedEditor .contract-preview-to {
+.OfferLetterAdvancedEditor .contract-preview-to {
   font-weight: 600;
 }
 
-.AdvancedEditor .contract-preview-signature,
-.AdvancedEditor .contract-preview-company,
-.AdvancedEditor .contract-preview-separator {
+.OfferLetterAdvancedEditor .contract-preview-signature,
+.OfferLetterAdvancedEditor .contract-preview-company,
+.OfferLetterAdvancedEditor .contract-preview-separator {
   margin-top: 14px;
 }
 
-.AdvancedEditor .contract-preview-image img {
+.OfferLetterAdvancedEditor .contract-preview-image img {
   display: block;
   max-width: 100%;
   height: auto;
 }
 
-.AdvancedEditor .no-pdf {
+.OfferLetterAdvancedEditor .no-pdf {
   flex: 1;
   display: grid;
   place-items: center;
@@ -1526,96 +1559,125 @@
   color: var(--text-soft);
 }
 
-.AdvancedEditor .no-pdf p:first-child {
+.OfferLetterAdvancedEditor .no-pdf p:first-child {
   font-size: 1.15rem;
   font-weight: 700;
   color: var(--text);
 }
 
 @media (max-width: 1400px) {
-  .AdvancedEditor .editor-container {
+  .OfferLetterAdvancedEditor .editor-container {
     grid-template-columns: 250px minmax(0, 1fr);
   }
 
-  .AdvancedEditor .preview-section {
+  .OfferLetterAdvancedEditor .preview-section {
     grid-column: 1 / -1;
     position: relative;
     top: 0;
     min-height: auto;
   }
+
+  .OfferLetterAdvancedEditor .page-capacity-indicator {
+    min-width: 200px;
+    max-width: 220px;
+  }
+
+  .OfferLetterAdvancedEditor .capacity-bar {
+    width: 180px;
+  }
 }
 
 @media (max-width: 1100px) {
-  .AdvancedEditor .editor-container {
+  .OfferLetterAdvancedEditor .editor-container {
     grid-template-columns: 1fr;
   }
 
-  .AdvancedEditor .sidebar,
-  .AdvancedEditor .preview-section {
+  .OfferLetterAdvancedEditor .sidebar,
+  .OfferLetterAdvancedEditor .preview-section {
     position: relative;
     top: 0;
     max-height: none;
   }
 
-  .AdvancedEditor .editor-area {
+  .OfferLetterAdvancedEditor .editor-area {
     order: -1;
+  }
+
+  .OfferLetterAdvancedEditor .editor-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .OfferLetterAdvancedEditor .page-capacity-indicator {
+    width: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+  }
+
+  .OfferLetterAdvancedEditor .capacity-wrapper {
+    justify-items: start;
+  }
+
+  .OfferLetterAdvancedEditor .capacity-bar {
+    width: 100%;
+    max-width: 300px;
   }
 }
 
 @media (max-width: 768px) {
-  .AdvancedEditor .editor-header {
+  .OfferLetterAdvancedEditor .editor-header {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .AdvancedEditor .header-actions {
+  .OfferLetterAdvancedEditor .header-actions {
     width: 100%;
   }
 
-  .AdvancedEditor .header-actions > * {
+  .OfferLetterAdvancedEditor .header-actions > * {
     width: 100%;
   }
 
-  .AdvancedEditor .editor-container {
+  .OfferLetterAdvancedEditor .editor-container {
     padding: 12px;
   }
 
-  .AdvancedEditor .sidebar,
-  .AdvancedEditor .editor-area,
-  .AdvancedEditor .preview-section,
-  .AdvancedEditor .paragraph-editor {
+  .OfferLetterAdvancedEditor .sidebar,
+  .OfferLetterAdvancedEditor .editor-area,
+  .OfferLetterAdvancedEditor .preview-section,
+  .OfferLetterAdvancedEditor .paragraph-editor {
     border-radius: 18px;
   }
 
-  .AdvancedEditor .editor-toolbar {
+  .OfferLetterAdvancedEditor .editor-toolbar {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .AdvancedEditor .page-capacity-indicator {
+  .OfferLetterAdvancedEditor .page-capacity-indicator {
     width: 100%;
     justify-content: flex-start;
   }
 
-  .AdvancedEditor .capacity-wrapper {
+  .OfferLetterAdvancedEditor .capacity-wrapper {
     justify-items: start;
   }
 
-  .AdvancedEditor .capacity-bar {
+  .OfferLetterAdvancedEditor .capacity-bar {
     width: 100%;
   }
 
-  .AdvancedEditor .paragraph-header {
+  .OfferLetterAdvancedEditor .paragraph-header {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .AdvancedEditor .paragraph-actions {
+  .OfferLetterAdvancedEditor .paragraph-actions {
     width: 100%;
     flex-wrap: wrap;
   }
 
-  .AdvancedEditor .paragraph-actions > * {
+  .OfferLetterAdvancedEditor .paragraph-actions > * {
     flex: 1 1 120px;
   }
 }

@@ -78,11 +78,13 @@ The backend entry point is [backend/server.js](backend/server.js). It loads envi
 ### Startup behavior
 
 - `helmet` adds security headers.
+- Express trusts loopback proxies by default so local frontend proxies can pass `X-Forwarded-For` without breaking public route rate limits.
 - `cors` is configured to allow the frontend origin from `FRONTEND_URL`.
 - `cookie-parser` and JSON body parsing are enabled.
 - Static assets are served from `backend/public`.
 - Generated offer-letter files are served from `/GeneratedOfferLetter`.
 - The RabbitMQ broadcast consumer starts after a successful MongoDB connection, but failure is non-fatal.
+- RabbitMQ is optional in development. When disabled or unavailable, broadcast and contract-acceptance notifications are persisted directly to MongoDB.
 - If MongoDB is not available, the app still boots and reports degraded mode.
 
 ### Backend routes
@@ -231,6 +233,7 @@ Create `backend/.env` with values similar to the following:
 ```env
 PORT=5000
 FRONTEND_URL=http://localhost:3000
+TRUST_PROXY=loopback
 MONGODB_URI=mongodb://127.0.0.1:27017/hr_management
 MONGODB_DB_NAME=hr_management
 
@@ -241,6 +244,7 @@ BASE_URL=http://localhost:5000
 WKHTMLTOPDF_PATH=C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe
 OFFER_LETTER_OUTPUT_DIR=GeneratedOfferLetter
 
+RABBITMQ_ENABLED=false
 RABBITMQ_URL=amqp://127.0.0.1
 RABBITMQ_QUEUE_NAME=hr.notifications
 RABBITMQ_BROADCAST_EXCHANGE=hr.broadcast
@@ -261,6 +265,10 @@ SMTP_USER=smtp-user
 SMTP_PASS=smtp-password
 SMTP_FROM=no-reply@example.com
 ```
+
+`TRUST_PROXY=loopback` is the recommended local setting because the React development proxy may add `X-Forwarded-For`. For a production reverse proxy, set `TRUST_PROXY` to the number of trusted proxy hops, commonly `1`.
+
+`RABBITMQ_ENABLED=false` keeps local development quiet when RabbitMQ is not installed. To use queue-backed broadcasts, start RabbitMQ, set `RABBITMQ_ENABLED=true`, and keep `RABBITMQ_URL` pointed at the broker.
 
 Optional acceptance signing settings can also be provided if your deployment uses signed audit evidence keys.
 
@@ -356,9 +364,15 @@ Additional worker accounts used for testing and contract generation:
 
 ### Notification issues
 
-- Confirm RabbitMQ is running.
+- If you do not need RabbitMQ locally, set `RABBITMQ_ENABLED=false`; notifications will be written directly to MongoDB where supported.
+- If you do need RabbitMQ, confirm the broker is running and listening on port `5672`.
 - Verify `RABBITMQ_URL` and `RABBITMQ_QUEUE_NAME`.
 - Check `RABBITMQ_BROADCAST_EXCHANGE` if broadcasts are not appearing.
+
+### Rate limit proxy issues
+
+- If you see `ERR_ERL_UNEXPECTED_X_FORWARDED_FOR`, keep `TRUST_PROXY=loopback` for local development.
+- In production, set `TRUST_PROXY` to the exact number of trusted reverse proxies instead of `true`.
 
 ### Port already in use
 

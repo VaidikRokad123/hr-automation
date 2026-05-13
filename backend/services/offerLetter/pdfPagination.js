@@ -75,7 +75,6 @@ export function splitParagraphIntoFitAndRest(para, metadata, maxHeightMm, estima
 export function repaginateForFooterSafety(pages, metadata, estimateBlockHeightMm, replaceVariables = (value) => value) {
     const repaginated = [];
     let pageNumber = 1;
-    const MIN_REMAINING_FOR_SPLIT_MM = 4;
 
     for (const page of pages) {
         let currentParagraphs = [];
@@ -91,71 +90,12 @@ export function repaginateForFooterSafety(pages, metadata, estimateBlockHeightMm
                 const PARAGRAPH_EXTRA_BOTTOM_RESERVE_MM = 4;
                 const extraReserveForParagraph = block.type === 'paragraph' ? PARAGRAPH_EXTRA_BOTTOM_RESERVE_MM : 0;
                 const effectivePageUsableHeight = pageUsableHeight - extraReserveForParagraph;
-                const remaining = effectivePageUsableHeight - currentHeight;
                 const willOverflow = (currentHeight + h) > effectivePageUsableHeight;
 
                 if (!willOverflow) {
                     currentParagraphs.push(block);
                     currentHeight += h;
                     continue;
-                }
-
-                const canSplitParagraph = block.type === 'paragraph' && stripHtml(block.content || '').trim().length > 0;
-                if (canSplitParagraph) {
-                    const targetFitHeight = remaining >= MIN_REMAINING_FOR_SPLIT_MM ? remaining : null;
-                    const split = targetFitHeight === null
-                        ? null
-                        : splitParagraphIntoFitAndRest(block, metadata, targetFitHeight, estimateBlockHeightMm, replaceVariables);
-
-                    if (split && split.fit?.content) {
-                        if (currentParagraphs.length > 0) {
-                            currentParagraphs.push(split.fit);
-                            currentHeight += estimateBlockHeightMm(split.fit, metadata, replaceVariables);
-                            repaginated.push({ pageNumber: pageNumber++, paragraphs: currentParagraphs });
-                            currentParagraphs = [];
-                            currentHeight = 0;
-                        } else {
-                            const splitBlocks = splitParagraphToFit(block, metadata, pageUsableHeight * 0.92, estimateBlockHeightMm, replaceVariables);
-                            const firstBlock = splitBlocks.shift();
-                            if (firstBlock) {
-                                currentParagraphs.push(firstBlock);
-                                currentHeight += estimateBlockHeightMm(firstBlock, metadata, replaceVariables);
-                                repaginated.push({ pageNumber: pageNumber++, paragraphs: currentParagraphs });
-                                currentParagraphs = [];
-                                currentHeight = 0;
-                            }
-                            splitBlocks.reverse().forEach((b) => queue.unshift(b));
-                            continue;
-                        }
-
-                        queue.unshift(split.rest);
-                        continue;
-                    }
-                }
-
-                if (currentParagraphs.length > 0 && block.type !== 'paragraph') {
-                    const lastPlaced = currentParagraphs[currentParagraphs.length - 1];
-                    if (lastPlaced?.type === 'paragraph') {
-                        const lastH = estimateBlockHeightMm(lastPlaced, metadata, replaceVariables);
-                        const heightWithoutLast = currentHeight - lastH;
-                        const availableForLastFit = effectivePageUsableHeight - heightWithoutLast;
-
-                        if (availableForLastFit >= MIN_REMAINING_FOR_SPLIT_MM) {
-                            const splitLast = splitParagraphIntoFitAndRest(lastPlaced, metadata, availableForLastFit, estimateBlockHeightMm, replaceVariables);
-                            if (splitLast?.fit?.content && splitLast?.rest?.content) {
-                                currentParagraphs[currentParagraphs.length - 1] = splitLast.fit;
-                                currentHeight = heightWithoutLast + estimateBlockHeightMm(splitLast.fit, metadata, replaceVariables);
-
-                                repaginated.push({ pageNumber: pageNumber++, paragraphs: currentParagraphs });
-                                currentParagraphs = [];
-                                currentHeight = 0;
-
-                                queue.unshift(block);
-                                queue.unshift(splitLast.rest);
-                                continue;
-                            }
-                        }
-                    }
                 }
 
                 if (currentParagraphs.length > 0) {

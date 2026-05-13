@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import apiClient from '../api/client';
 import ContractViewer from '../modules/Contract/ContractViewer';
-import '../modules/Contract/ContractAcceptance.css';
+import './ContractAcceptancePage.css';
+import { getContractPageId } from '../modules/Contract/contractLayout';
 
 function getErrorMessage(error, fallback) {
     return error.response?.data?.message || fallback;
@@ -27,7 +28,7 @@ export default function ContractAcceptancePage() {
     const signatureDrawingRef = useRef(false);
 
     const requiredPageIds = useMemo(
-        () => (contract?.pagesData || []).map((page, index) => `page-${page.pageNumber || index + 1}`),
+        () => (contract?.pagesData || []).map((page, index) => getContractPageId(page, index)),
         [contract]
     );
     const totalPages = requiredPageIds.length;
@@ -198,16 +199,6 @@ export default function ContractAcceptancePage() {
 
     const handleSignaturePointerUp = () => {
         signatureDrawingRef.current = false;
-    };
-
-    const goToPreviousPage = () => {
-        setCurrentPageIndex((current) => Math.max(0, current - 1));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const goToNextPage = () => {
-        setCurrentPageIndex((current) => Math.min(totalPages - 1, current + 1));
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     useEffect(() => {

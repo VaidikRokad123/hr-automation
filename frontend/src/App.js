@@ -1,7 +1,8 @@
 import React from 'react';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import AdvancedEditor from './modules/OfferLetter/AdvancedEditor';
+import OfferLetterEditor from './modules/OfferLetter/OfferLetterEditor';
+import ContractEditor from './modules/Contract/ContractEditor';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ContractAcceptancePage from './pages/ContractAcceptancePage';
@@ -36,7 +37,8 @@ function App() {
             </Route>
             <Route element={<ProtectedRoute allowedRoles={[ROLE_CEO, ROLE_HR]} />}>
               <Route path="/offer-letter" element={<OfferLetterPage />} />
-              <Route path="/advanced-editor" element={<AdvancedEditor />} />
+              <Route path="/offer-letter-editor" element={<OfferLetterEditor />} />
+              <Route path="/contract-editor" element={<ContractEditor />} />
             </Route>
             <Route path="*" element={<LoginPage />} />
           </Routes>

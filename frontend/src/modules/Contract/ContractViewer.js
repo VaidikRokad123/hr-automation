@@ -1,13 +1,12 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
-import './ContractAcceptance.css';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import './ContractViewer.css';
 import { sanitizeHtml } from '../../utils/safeHtml';
+import { CONTRACT_LETTERHEAD_STYLE, getContractPageId } from './contractLayout';
 
-const COMPANY_LETTERHEAD_STYLE = {
-    backgroundImage: "url('/images/offerletter/temp.jpg')"
-};
+const CONTRACT_PAGE_WIDTH_PX = 210 * 96 / 25.4;
 
 function getPageId(page, index) {
-    return `page-${page.pageNumber || index + 1}`;
+    return getContractPageId(page, index);
 }
 
 function RichText({ children, className = '', as: Component = 'div' }) {
@@ -68,6 +67,9 @@ export default function ContractViewer({
     currentPageIndex = 0,
     onPageIndexChange
 }) {
+    const pageStageRef = useRef(null);
+    const [pageScale, setPageScale] = useState(1);
+
     const requiredPageIds = useMemo(
         () => (pagesData || []).map((page, index) => getPageId(page, index)),
         [pagesData]
@@ -102,30 +104,64 @@ export default function ContractViewer({
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [currentPageIndex]);
 
+    useEffect(() => {
+        const updatePageScale = () => {
+            const stage = pageStageRef.current;
+            if (!stage) return;
+
+            const availableWidth = Math.max(0, stage.clientWidth - 2);
+            const nextScale = Math.min(1, availableWidth / CONTRACT_PAGE_WIDTH_PX);
+            setPageScale(Number.isFinite(nextScale) && nextScale > 0 ? nextScale : 1);
+        };
+
+        updatePageScale();
+
+        const stage = pageStageRef.current;
+        const resizeObserver = typeof ResizeObserver !== 'undefined' && stage
+            ? new ResizeObserver(updatePageScale)
+            : null;
+
+        if (resizeObserver && stage) {
+            resizeObserver.observe(stage);
+        }
+
+        window.addEventListener('resize', updatePageScale);
+
+        return () => {
+            resizeObserver?.disconnect();
+            window.removeEventListener('resize', updatePageScale);
+        };
+    }, []);
+
     return (
         <div className="contract-viewer-wrap">
             <main className="contract-pages" aria-label="Contract document">
-                {visiblePage ? (() => {
-                    const pageId = getPageId(visiblePage, currentPageIndex);
+                <div
+                    className="contract-page-stage"
+                    ref={pageStageRef}
+                    style={{ '--contract-page-scale': String(pageScale) }}
+                >
+                    {visiblePage ? (() => {
+                        const pageId = getPageId(visiblePage, currentPageIndex);
 
-                    return (
-                        <section
-                            key={pageId}
-                            id={pageId}
-                            data-page-id={pageId}
-                            className="contract-page"
-                            style={COMPANY_LETTERHEAD_STYLE}
-                        >
-                            <div className="contract-page-number">Page {currentPageIndex + 1}</div>
-                            {(visiblePage.paragraphs || []).map((paragraph, paragraphIndex) => (
-                                <ContractParagraph
-                                    key={paragraph.id || `${pageId}-${paragraphIndex}`}
-                                    paragraph={paragraph}
-                                />
-                            ))}
-                        </section>
-                    );
-                })() : null}
+                        return (
+                            <section
+                                key={pageId}
+                                id={pageId}
+                                data-page-id={pageId}
+                                className="contract-page"
+                                style={CONTRACT_LETTERHEAD_STYLE}
+                            >
+                                {(visiblePage.paragraphs || []).map((paragraph, paragraphIndex) => (
+                                    <ContractParagraph
+                                        key={paragraph.id || `${pageId}-${paragraphIndex}`}
+                                        paragraph={paragraph}
+                                    />
+                                ))}
+                            </section>
+                        );
+                    })() : null}
+                </div>
                 <div className="contract-id-note">Contract ID: {contractId}</div>
                 <div className="contract-page-controls page-card">
                     <button

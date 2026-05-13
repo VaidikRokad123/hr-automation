@@ -1,29 +1,20 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import './AdvancedEditor.css';
+import './OfferLetterAdvancedEditor.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import apiClient from '../../api/client';
 import { sanitizeHtml } from '../../utils/safeHtml';
 
-const COMPANY_LETTERHEAD_STYLE = {
-  backgroundImage: "url('/images/offerletter/temp.jpg')"
-};
-
-function AdvancedEditor() {
+function OfferLetterAdvancedEditor() {
   const location = useLocation();
   const navigate = useNavigate();
-  const editorMode = location.state?.mode || 'offer';
-  const selectedWorker = location.state?.worker || null;
   const initialPages = location.state?.pages || null;
   const initialMetadata = location.state?.metadata || null;
-  const isContractMode = editorMode === 'contract';
   const [pdfUrl, setPdfUrl] = useState(location.state?.pdfUrl || '');
   const [pages, setPages] = useState([]);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [metadata, setMetadata] = useState({});
   const [loading, setLoading] = useState(true);
   const [compiling, setCompiling] = useState(false);
-  const [generatingContract, setGeneratingContract] = useState(false);
-  const [sendingContract, setSendingContract] = useState(false);
   const [error, setError] = useState('');
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
@@ -32,16 +23,12 @@ function AdvancedEditor() {
   const lastFocusedTextarea = useRef(null);
   const measurementRootRef = useRef(null);
 
-  // Keep editor fullness aligned with template layout and footer safety.
+  // Offer letter mode constants
   const PAGE_HEIGHT_MM = 297;
   const TOP_PADDING_MM = 30;
   const SIDE_PADDING_MM = 25;
   const BOTTOM_SAFE_MM = 28;
-  const CONTRACT_TOP_PADDING_MM = 38;
-  const CONTRACT_BOTTOM_SAFE_MM = 46;
-  const ACTIVE_TOP_PADDING_MM = isContractMode ? CONTRACT_TOP_PADDING_MM : TOP_PADDING_MM;
-  const ACTIVE_BOTTOM_SAFE_MM = isContractMode ? CONTRACT_BOTTOM_SAFE_MM : BOTTOM_SAFE_MM;
-  const REALISTIC_CONTENT_HEIGHT_MM = PAGE_HEIGHT_MM - ACTIVE_TOP_PADDING_MM - ACTIVE_BOTTOM_SAFE_MM;
+  const REALISTIC_CONTENT_HEIGHT_MM = PAGE_HEIGHT_MM - TOP_PADDING_MM - BOTTOM_SAFE_MM;
   const PAGE_PACKING_LIMIT_MM = REALISTIC_CONTENT_HEIGHT_MM - 2;
   const PX_PER_MM = 96 / 25.4;
 
@@ -56,26 +43,6 @@ function AdvancedEditor() {
     pageNumber: index + 1
   }));
 
-  const renderContractPreviewParagraph = (para, index) => {
-    const type = para.type || 'paragraph';
-
-    if (type === 'image') {
-      return (
-        <div key={para.id || index} className="contract-preview-image">
-          <img src={para.content} alt={para.alt || 'Contract visual'} />
-        </div>
-      );
-    }
-
-    return (
-      <div
-        key={para.id || index}
-        className={`contract-preview-text contract-preview-${type}`}
-        dangerouslySetInnerHTML={{ __html: sanitizeHtml(para.content) }}
-      />
-    );
-  };
-
   const measureParagraphsHeightMm = (paragraphs = []) => {
     const root = measurementRootRef.current;
     if (!root || typeof window === 'undefined') {
@@ -85,7 +52,7 @@ function AdvancedEditor() {
     root.innerHTML = '';
     const pageEl = document.createElement('div');
     pageEl.style.width = '210mm';
-    pageEl.style.minHeight = '297mm';
+    pageEl.style.minHeight = `${PAGE_HEIGHT_MM}mm`;
     pageEl.style.position = 'relative';
     pageEl.style.fontFamily = 'Arial, sans-serif';
     pageEl.style.fontSize = '11pt';
@@ -93,7 +60,7 @@ function AdvancedEditor() {
     pageEl.style.color = '#000';
 
     const contentEl = document.createElement('div');
-    contentEl.style.padding = `${ACTIVE_TOP_PADDING_MM}mm ${SIDE_PADDING_MM}mm ${ACTIVE_BOTTOM_SAFE_MM}mm ${SIDE_PADDING_MM}mm`;
+    contentEl.style.padding = `${TOP_PADDING_MM}mm ${SIDE_PADDING_MM}mm ${BOTTOM_SAFE_MM}mm ${SIDE_PADDING_MM}mm`;
     contentEl.style.position = 'relative';
     contentEl.style.height = `${REALISTIC_CONTENT_HEIGHT_MM}mm`;
     contentEl.style.boxSizing = 'content-box';
@@ -179,9 +146,8 @@ function AdvancedEditor() {
     });
 
     const contentRect = contentEl.getBoundingClientRect();
-    // Measure from the top of the *content box* (excluding padding-top),
-    // so this matches the backend's CONTENT_MAX_HEIGHT_MM semantics.
-    const contentAreaTop = contentRect.top + (ACTIVE_TOP_PADDING_MM * PX_PER_MM);
+    // Measure from the top of the *content box* (excluding padding-top)
+    const contentAreaTop = contentRect.top + (TOP_PADDING_MM * PX_PER_MM);
     let maxBottom = contentAreaTop;
     Array.from(contentEl.children).forEach((child) => {
       const rect = child.getBoundingClientRect();
@@ -211,37 +177,9 @@ function AdvancedEditor() {
     return measureParagraphsHeightMm(paragraphs);
   };
 
-  const splitParagraphIntoFitAndRest = (paragraph, maxHeightMm) => {
-    if ((paragraph.type || 'paragraph') !== 'paragraph') return null;
-
-    const words = stripHtml(resolveEditorVariables(paragraph.content || '')).split(/\s+/).filter(Boolean);
-    if (words.length < 2 || maxHeightMm < 8) return null;
-
-    let fitWords = [];
-    for (const word of words) {
-      const candidateWords = [...fitWords, word];
-      const candidate = { ...paragraph, content: candidateWords.join(' ') };
-      if (calculatePageHeight([candidate]) <= maxHeightMm || fitWords.length === 0) {
-        fitWords = candidateWords;
-      } else {
-        break;
-      }
-    }
-
-    if (fitWords.length === 0 || fitWords.length >= words.length) return null;
-
-    return {
-      fit: {
-        ...paragraph,
-        id: `${paragraph.id || 'p'}_part_${Date.now()}_fit`,
-        content: fitWords.join(' ')
-      },
-      rest: {
-        ...paragraph,
-        id: `${paragraph.id || 'p'}_part_${Date.now()}_rest`,
-        content: words.slice(fitWords.length).join(' ')
-      }
-    };
+  const splitParagraphIntoFitAndRest = () => {
+    // Keep paragraphs intact during auto pagination. Users can still split manually.
+    return null;
   };
 
   // Auto-paginate when content changes
@@ -320,12 +258,7 @@ function AdvancedEditor() {
 
       if (Array.isArray(initialPages) && initialPages.length > 0) {
         setPages(initialPages);
-        setMetadata({
-          ...(initialMetadata || {}),
-          workerId: selectedWorker?._id || initialMetadata?.workerId,
-          workerName: selectedWorker?.name || initialMetadata?.workerName || initialMetadata?.name,
-          workerEmail: selectedWorker?.email || initialMetadata?.workerEmail
-        });
+        setMetadata(initialMetadata || {});
         return;
       }
 
@@ -333,27 +266,8 @@ function AdvancedEditor() {
 
       if (response.data.success) {
         const { pages: backendPages, metadata: backendMetadata } = response.data.data;
-
-        if (isContractMode) {
-          const templatePayload = {
-            ...backendMetadata,
-            name: selectedWorker?.name || backendMetadata.name,
-            workerName: selectedWorker?.name || backendMetadata.workerName || backendMetadata.name,
-            workerEmail: selectedWorker?.email || backendMetadata.workerEmail,
-            workerId: selectedWorker?._id || backendMetadata.workerId
-          };
-          const templateResponse = await apiClient.post('/api/contracts/template', templatePayload);
-          setPages(templateResponse.data.data.pages);
-          setMetadata({
-            ...templateResponse.data.data.metadata,
-            workerId: selectedWorker?._id || templatePayload.workerId,
-            workerName: selectedWorker?.name || templatePayload.workerName,
-            workerEmail: selectedWorker?.email || templatePayload.workerEmail
-          });
-        } else {
-          setPages(backendPages);
-          setMetadata(backendMetadata);
-        }
+        setPages(backendPages);
+        setMetadata(backendMetadata);
 
         // Update PDF URL if available
         if (location.state?.pdfUrl) {
@@ -362,48 +276,11 @@ function AdvancedEditor() {
       }
     } catch (err) {
       console.error('Error fetching offer letter data:', err);
-      if (isContractMode) {
-        try {
-          const templateResponse = await apiClient.post('/api/contracts/template', {
-            name: selectedWorker?.name,
-            workerName: selectedWorker?.name,
-            workerEmail: selectedWorker?.email,
-            workerId: selectedWorker?._id
-          });
-          setPages(templateResponse.data.data.pages);
-          setMetadata({
-            ...templateResponse.data.data.metadata,
-            workerId: selectedWorker?._id,
-            workerName: selectedWorker?.name,
-            workerEmail: selectedWorker?.email
-          });
-        } catch (templateErr) {
-          setPages([
-            {
-              pageNumber: 1,
-              paragraphs: [
-                {
-                  id: `p${Date.now()}`,
-                  content: selectedWorker ? `Employment Contract for ${selectedWorker.name}` : 'Employment Contract',
-                  type: 'subject'
-                },
-                {
-                  id: `p${Date.now()}_body`,
-                  content: 'Enter contract terms here.',
-                  type: 'paragraph'
-                }
-              ]
-            }
-          ]);
-          setMetadata({ workerId: selectedWorker?._id, workerName: selectedWorker?.name });
-        }
-      } else {
-        setError('Failed to load offer letter data. Please generate an offer letter first.');
-      }
+      setError('Failed to load offer letter data. Please generate an offer letter first.');
     } finally {
       setLoading(false);
     }
-  }, [initialMetadata, initialPages, isContractMode, location.state?.pdfUrl, selectedWorker]);
+  }, [initialMetadata, initialPages, location.state?.pdfUrl]);
 
   const addNewPage = () => {
     const newPage = {
@@ -676,67 +553,6 @@ function AdvancedEditor() {
     }
   };
 
-  const generateContractFromOffer = async () => {
-    try {
-      setGeneratingContract(true);
-      setError('');
-
-      const response = await apiClient.post('/api/contracts/template', metadata);
-      navigate('/advanced-editor', {
-        state: {
-          mode: 'contract',
-          pages: response.data.data.pages,
-          metadata: response.data.data.metadata
-        }
-      });
-    } catch (err) {
-      console.error('Error generating contract:', err);
-      setError(err.response?.data?.message || 'Failed to generate contract. Please try again.');
-      setNotificationMessage('Failed to generate contract');
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 3000);
-    } finally {
-      setGeneratingContract(false);
-    }
-  };
-
-  const sendContract = async () => {
-    if (!selectedWorker?._id) {
-      setError('Please select a worker before sending a contract.');
-      return;
-    }
-
-    try {
-      setSendingContract(true);
-      setError('');
-
-      await apiClient.post('/api/contracts/send', {
-        workerId: selectedWorker._id,
-        pagesData: pages,
-        metadata: {
-          ...metadata,
-          workerName: selectedWorker.name,
-          workerEmail: selectedWorker.email
-        }
-      });
-
-      setNotificationMessage(`Contract sent to ${selectedWorker.name}`);
-      setShowNotification(true);
-      setTimeout(() => {
-        setShowNotification(false);
-        navigate('/dashboard');
-      }, 1200);
-    } catch (err) {
-      console.error('Error sending contract:', err);
-      setError(err.response?.data?.message || 'Failed to send contract. Please try again.');
-      setNotificationMessage('Failed to send contract');
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 3000);
-    } finally {
-      setSendingContract(false);
-    }
-  };
-
   const downloadPDF = () => {
     if (!pdfUrl) {
       setNotificationMessage('Please compile the PDF first');
@@ -834,9 +650,9 @@ function AdvancedEditor() {
 
   if (loading) {
     return (
-      <div className="AdvancedEditor">
+      <div className="OfferLetterAdvancedEditor">
         <div className="loading-container">
-          <h2>{isContractMode ? 'Preparing contract editor...' : 'Loading offer letter data...'}</h2>
+          <h2>Loading offer letter editor...</h2>
         </div>
       </div>
     );
@@ -844,7 +660,7 @@ function AdvancedEditor() {
 
   if (error && pages.length === 0) {
     return (
-      <div className="AdvancedEditor">
+      <div className="OfferLetterAdvancedEditor">
         <div className="error-container">
           <h2>Error</h2>
           <p>{error}</p>
@@ -857,7 +673,7 @@ function AdvancedEditor() {
   const currentPage = pages[currentPageIndex] || { paragraphs: [] };
 
   return (
-    <div className="AdvancedEditor">
+    <div className="OfferLetterAdvancedEditor">
       {showNotification && (
         <div className="notification-popup">
           ✓ {notificationMessage}
@@ -866,25 +682,14 @@ function AdvancedEditor() {
 
       <div className="editor-header">
         <button onClick={goBack} className="back-btn">← Back to Dashboard</button>
-        <h1>{isContractMode ? 'Contract Editor' : 'Advanced PDF Editor'}</h1>
+        <h1>Offer Letter Editor</h1>
         <div className="header-actions">
-          {isContractMode ? (
-            <button onClick={sendContract} disabled={sendingContract} className="compile-btn">
-              {sendingContract ? 'Sending...' : 'Finalise & Send Contract'}
-            </button>
-          ) : (
-            <>
-              <button onClick={compilePDF} disabled={compiling} className="compile-btn">
-                {compiling ? 'Compiling...' : '🔨 Compile PDF'}
-              </button>
-              <button onClick={generateContractFromOffer} disabled={generatingContract} className="compile-btn">
-                {generatingContract ? 'Generating...' : 'Generate Contract'}
-              </button>
-              <button onClick={downloadPDF} disabled={!pdfUrl} className="download-btn">
-                ⬇️ Download PDF
-              </button>
-            </>
-          )}
+          <button onClick={compilePDF} disabled={compiling} className="compile-btn">
+            {compiling ? 'Compiling...' : '🔨 Compile PDF'}
+          </button>
+          <button onClick={downloadPDF} disabled={!pdfUrl} className="download-btn">
+            ⬇️ Download PDF
+          </button>
         </div>
       </div>
 
@@ -1078,21 +883,8 @@ function AdvancedEditor() {
 
         {/* Right Sidebar - Preview */}
         <div className="preview-section">
-          <h3>{isContractMode ? 'Contract Preview' : 'PDF Preview'}</h3>
-          {isContractMode ? (
-            <div className="contract-editor-preview" aria-label="Contract preview">
-              {pages.map((page, pageIndex) => (
-                <section
-                  key={page.pageNumber || pageIndex}
-                  className="contract-preview-page"
-                  style={COMPANY_LETTERHEAD_STYLE}
-                >
-                  <div className="contract-preview-page-number">Page {pageIndex + 1}</div>
-                  {(page.paragraphs || []).map(renderContractPreviewParagraph)}
-                </section>
-              ))}
-            </div>
-          ) : pdfUrl ? (
+          <h3>PDF Preview</h3>
+          {pdfUrl ? (
             <iframe
               src={pdfUrl}
               title="PDF Preview"
@@ -1120,4 +912,4 @@ function AdvancedEditor() {
   );
 }
 
-export default AdvancedEditor;
+export default OfferLetterAdvancedEditor;

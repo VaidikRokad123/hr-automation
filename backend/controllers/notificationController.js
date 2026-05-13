@@ -1,5 +1,6 @@
 import { sendMessage } from '../services/messaging/messagePublisher.js';
 import { publishBroadcast } from '../services/messaging/broadcastPublisher.js';
+import { isRabbitMQEnabled } from '../services/messaging/rabbitmqConnection.js';
 import { DEFAULT_MESSAGE_QUEUE } from '../services/messaging/queueNames.js';
 import Notification from '../models/notificationModel.js';
 import User from '../models/userModel.js';
@@ -55,6 +56,13 @@ async function saveBroadcastDirectly({ title, message, priority, metadata, sende
 
 export async function createNotification(req, res) {
     try {
+        if (!isRabbitMQEnabled()) {
+            return res.status(503).json({
+                success: false,
+                message: 'Queue notifications are disabled. Set RABBITMQ_ENABLED=true and RABBITMQ_URL to enable RabbitMQ.'
+            });
+        }
+
         const { title, message, recipientId, metadata = {} } = req.body || {};
 
         if (!title && !message) {
@@ -98,7 +106,7 @@ export function getNotifications(req, res) {
         success: true,
         message: 'Notification queue is configured',
         queueName: DEFAULT_MESSAGE_QUEUE,
-        rabbitmqUrlConfigured: Boolean(process.env.RABBITMQ_URL)
+        rabbitmqEnabled: isRabbitMQEnabled()
     });
 }
 
@@ -136,20 +144,22 @@ export async function broadcastNotification(req, res) {
     };
 
     // 1️⃣ Try RabbitMQ first
-    try {
-        const result = await publishBroadcast({ type: 'broadcast', payload });
-        return res.status(202).json({
-            success: true,
-            message: 'Notification broadcast queued via RabbitMQ',
-            data: {
-                via:       'rabbitmq',
-                exchange:  result.exchange,
-                messageId: result.message.id,
-                sentAt
-            }
-        });
-    } catch (mqErr) {
-        console.warn('[broadcastNotification] RabbitMQ unavailable, falling back to DB direct:', mqErr.message);
+    if (isRabbitMQEnabled()) {
+        try {
+            const result = await publishBroadcast({ type: 'broadcast', payload });
+            return res.status(202).json({
+                success: true,
+                message: 'Notification broadcast queued via RabbitMQ',
+                data: {
+                    via:       'rabbitmq',
+                    exchange:  result.exchange,
+                    messageId: result.message.id,
+                    sentAt
+                }
+            });
+        } catch (mqErr) {
+            console.warn('[broadcastNotification] RabbitMQ unavailable, falling back to DB direct:', mqErr.message);
+        }
     }
 
     // 2️⃣ Fallback: write straight to MongoDB
@@ -157,7 +167,7 @@ export async function broadcastNotification(req, res) {
         const { count } = await saveBroadcastDirectly({ ...payload, senderId });
         return res.status(202).json({
             success: true,
-            message: `Notification delivered directly to ${count} member(s) (RabbitMQ offline)`,
+            message: `Notification delivered directly to ${count} member(s) (RabbitMQ disabled or offline)`,
             data: {
                 via:    'db-direct',
                 count,

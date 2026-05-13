@@ -15,10 +15,29 @@ import { authenticateToken, authorizeRoles } from './middleware/authMiddleware.j
 import { ROLE_CEO, ROLE_HR } from './constants/roles.js';
 import { seedDefaultUsers } from './services/seedDefaultUsers.js';
 import { startBroadcastConsumer } from './services/messaging/broadcastConsumer.js';
+import { isRabbitMQEnabled } from './services/messaging/rabbitmqConnection.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017';
+
+function parseTrustProxy(value) {
+    if (value === undefined) {
+        return 'loopback';
+    }
+
+    const normalized = String(value).trim().toLowerCase();
+    if (normalized === 'false' || normalized === '0' || normalized === 'off') {
+        return false;
+    }
+
+    if (normalized === 'true' || normalized === '1' || normalized === 'on') {
+        return 1;
+    }
+
+    const hopCount = Number(normalized);
+    return Number.isInteger(hopCount) && hopCount > 0 ? hopCount : value;
+}
 
 function requireDatabase(req, res, next) {
     if (!req.app.locals.dbReady) {
@@ -32,6 +51,7 @@ function requireDatabase(req, res, next) {
 }
 
 // Middleware
+app.set('trust proxy', parseTrustProxy(process.env.TRUST_PROXY));
 app.use(helmet({
     crossOriginResourcePolicy: false,
     xFrameOptions: false
@@ -90,11 +110,14 @@ async function startServer() {
         await seedDefaultUsers();
         app.locals.dbReady = true;
 
-        // Start RabbitMQ broadcast consumer (non-fatal if unavailable)
-        try {
-            await startBroadcastConsumer();
-        } catch (err) {
-            console.warn('RabbitMQ unavailable — broadcast notifications disabled:', err.message);
+        if (isRabbitMQEnabled()) {
+            try {
+                await startBroadcastConsumer();
+            } catch (err) {
+                console.warn('RabbitMQ unavailable - broadcast notifications will use MongoDB fallback:', err.message);
+            }
+        } else {
+            console.log('RabbitMQ disabled - notifications will use MongoDB fallback. Set RABBITMQ_URL to enable it.');
         }
 
         app.listen(PORT, () => {
